@@ -1,4 +1,4 @@
 #pragma once
 double ToDec(char[], int);
-char *FromDec(double, int);
+void FromDec(char[], int, double, int);
 bool Validation(int, int, char*);
