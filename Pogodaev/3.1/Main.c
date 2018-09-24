@@ -11,6 +11,9 @@ int main() {
 		printf("bad input");
 		exit(0);
 	}
+	if (arrLength == 0) {
+		return 0;	
+	}
 
 	// Allocating memory for array
 	int *arr;
