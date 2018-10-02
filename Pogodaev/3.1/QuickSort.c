@@ -4,18 +4,28 @@ void swap(int *a, int *b) {
 	*b = t;
 }
 
-void QuickSort(int *arr, int left, int right) {
+int Partition(int *arr, int left, int right) {
+	// select middle element as a pivot
 	int pivot = arr[(left + right) / 2];
-	int l = left, r = right;
-	do {
-		while (arr[l] < pivot) ++l;
-		while (arr[r] > pivot) --r;
-		if (l <= r) {
-			swap(&arr[l], &arr[r]);
-			++l;
-			--r;
+	// partitioning
+	while (left <= right) {
+		// find elements in wrong positions
+		while (arr[left] < pivot) ++left;
+		while (arr[right] > pivot) --right;
+		// and swap them
+		if (left <= right) {
+			swap(&arr[left], &arr[right]);
+			++left;
+			--right;
 		}
-	} while (l <= r);
-	if (left < r) QuickSort(arr, left, r);
-	if (right > l) QuickSort(arr, l, right);
+	}
+	return left;
+}
+
+void QuickSort(int *arr, int left, int right) {
+	// part an array
+	int	point = Partition(arr, left, right);
+	// sort left and right parts
+    if (right > point) QuickSort(arr, point, right);
+	if (left < point - 1) QuickSort(arr, left, point - 1);
 }
