@@ -24,8 +24,8 @@ int Partition(int *arr, int left, int right) {
 
 void QuickSort(int *arr, int left, int right) {
 	// part an array
-	int	point = Partition(arr, left, right);
+	int point = Partition(arr, left, right);
 	// sort left and right parts
-    if (right > point) QuickSort(arr, point, right);
+	if (right > point) QuickSort(arr, point, right);
 	if (left < point - 1) QuickSort(arr, left, point - 1);
 }
