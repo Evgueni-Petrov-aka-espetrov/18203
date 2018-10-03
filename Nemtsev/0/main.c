@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// Максимальная длина входной строки
+
 const int MaxInputLength = 13;
 const int MaxOutputLength = 53;
 
@@ -11,7 +11,6 @@ void WriteNumber(double value, char * output, int radix);
 int main()
 {
     // test git
-    // Ввод оснований системы счисления
     int radix1, radix2;
     scanf("%d %d", &radix1, &radix2);
 
@@ -27,7 +26,7 @@ int main()
         return 0;
     }
 
-    // Входная строка
+
     char input[MaxInputLength + 1];
     scanf("%s", input);
 
@@ -39,9 +38,9 @@ int main()
         return 0;
     }
 
-    char output[MaxOutputLength + 1]; // ??
+    char output[MaxOutputLength + 1]; 
 
-    // Преобразование числа в текстовую запись
+
     WriteNumber(value, output, radix2);
     printf(output);
 
@@ -52,13 +51,13 @@ int GetDigitValue(char ch)
 {
     if (ch >= '0' && ch <= '9')
     {
-        // Код символа '0' = 48
+
         return ch - '0';
     }
 
     if (ch >= 'a' && ch <= 'f')
     {
-        // Символ 'a' соответствует числу 10
+
         return ch - 'a' + 10;
     }
 
