@@ -10,6 +10,7 @@ void WriteNumber(double value, char * output, int radix);
 
 int main()
 {
+    // test git
     // ¬вод оснований системы счислени€
     int radix1, radix2;
     scanf("%d %d", &radix1, &radix2);
