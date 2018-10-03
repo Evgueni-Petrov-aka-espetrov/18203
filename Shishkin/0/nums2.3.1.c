@@ -1,8 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 void CharToB1(char sIN[], float nIN[], int amount) {
-	int i, z;
-	z = 0;
+	int i;
 	for (i = 0; i<amount; i++) {
 		if (((sIN[i] - 48) < 10) && ((sIN[i] - 48) >= 0))  nIN[i] = sIN[i] - 46;
 		if (((sIN[i] - 65) < 6) && ((sIN[i] - 65) >= 0))  nIN[i] = sIN[i] - 53;              //çàïèñü èç àñêèêîäà
@@ -161,11 +160,9 @@ int main() {
 		if (check(numberIN, b1, b2, amount) == 1) fprintf(fout, "bad input");
 		else {
 			fallOn2(numberIN, amount);
-			
 			celayachast = B1ToTen(numberIN, drobnayachast, b1, amount);
 			if (celayachast == -1) fprintf(fout, "bad input");
 			else{
-				
 				TenToB2(numberOUT, drobnayachast, celayachast, b2);
 				B2ToChar(numberOUT, symbolsOUT, fout);
 			}
