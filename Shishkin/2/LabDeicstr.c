@@ -2,12 +2,12 @@
 #include <string.h>
 int read (FILE *fin,char str[]) {
 	int moves;
-	fgets (str, 20, fin);						//чтение цифр из файла и запись в строку
+	fgets (str, 20, fin);						//Г·ГІГҐГ­ГЁГҐ Г¶ГЁГґГ° ГЁГ§ ГґГ Г©Г«Г  ГЁ Г§Г ГЇГЁГ±Гј Гў Г±ГІГ°Г®ГЄГі
 	fscanf(fin, "%d", &moves);
 	return moves;
 }
 	
-int check (char symbols[], int num) {                              //проверка прочтенных цифр(return correct=0 or incorrect=1)
+int check (char symbols[], int num) {                              //ГЇГ°Г®ГўГҐГ°ГЄГ  ГЇГ°Г®Г·ГІГҐГ­Г­Г»Гµ Г¶ГЁГґГ°(return correct=0 or incorrect=1)
 	int i, errornum, j;
 	errornum=0;
 	for (i=0; i < num-1; i++){
@@ -36,7 +36,7 @@ void bigswap (char symbols[], int num) {
 	i = num-2;
 	j = num-2;
 	while (symbols[j] < symbols[j-1]) j--;
-	while (symbols[i] < symbols[j-1]) i--;                                    //создает 1 новую(следующую) перестановку 
+	while (symbols[i] < symbols[j-1]) i--;                                    //Г±Г®Г§Г¤Г ГҐГІ 1 Г­Г®ГўГіГѕ(Г±Г«ГҐГ¤ГіГѕГ№ГіГѕ) ГЇГҐГ°ГҐГ±ГІГ Г­Г®ГўГЄГі 
 	swap (symbols, j-1, i);
 	z = (num-j-2)/2;
 	for (k=0;  k<= z; k++) {
@@ -45,31 +45,35 @@ void bigswap (char symbols[], int num) {
 }
 
 int main () {
-	FILE *fin, *fout;
-	char symbols[20];
-	int  num,moves,i, j, swapvar;
-	fout = fopen("out.txt", "w");
-	if ((fin=fopen("in.txt", "r")) == NULL) 
+	FILE *fin = fopen("in.txt", "r");
+	FILE *fout = fopen("out.txt", "w");
+	if (fin == NULL) {
 		printf("File could not be opened.");
-	else {
-		moves=read (fin, symbols);
-		num = strlen(symbols);
-		if (check(symbols,num) == 1) fprintf(fout, "bad input");
-		else {
-			for (i=0; i<moves; i++) {
-				swapvar = 0;
-				for (j = 0; j<num-1; j++) {
-					if (symbols[j] < symbols[j+1]) swapvar++;
+	} else {
+		char symbols[20];
+		int moves = read(fin, symbols);
+		int num = strlen(symbols);
+		if (check(symbols,num) == 1) {
+			fprintf(fout, "bad input");
+		} else {
+			int i;
+			for (i = 0; i < moves; i++) {
+				int j;
+				int swapvar = 0;
+				for (j = 0; j < num - 1; j++) {
+					if (symbols[j] < symbols[j + 1]) {
+						swapvar++;
+					}
 				}
 				if (swapvar > 0) {
-						bigswap(symbols, num);
-						fprintf(fout,"%s", symbols);
+					bigswap(symbols, num);
+					fprintf(fout,"%s", symbols);
 				}
 			} 
 		}
-	fclose(fin);
-	fclose(fout);
+		fclose(fin);
 	}
+	fclose(fout);
 	return 0; 
 }
 
