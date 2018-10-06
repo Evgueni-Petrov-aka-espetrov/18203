@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <malloc.h>
 void qsort (int array[], int finish, int start) {
 	int firstpos, lastpos, pivot, t; 		
 	firstpos = start;
@@ -10,14 +11,14 @@ void qsort (int array[], int finish, int start) {
 		while (array[lastpos] > pivot) lastpos--;
 		if (firstpos <= lastpos) {
     		t = array[firstpos];
-			array[firstpos] = array[lastpos]; 						// ïðîöåäóðà ñîðòèðîâêè îòíîñèòåëüíî îïîðíîãî ýëåìåíòà
+			array[firstpos] = array[lastpos]; 						// Ã¯Ã°Ã®Ã¶Ã¥Ã¤Ã³Ã°Ã  Ã±Ã®Ã°Ã²Ã¨Ã°Ã®Ã¢ÃªÃ¨ Ã®Ã²Ã­Ã®Ã±Ã¨Ã²Ã¥Ã«Ã¼Ã­Ã® Ã®Ã¯Ã®Ã°Ã­Ã®Ã£Ã® Ã½Ã«Ã¥Ã¬Ã¥Ã­Ã²Ã 
 			array[lastpos] = t;
 			firstpos++; 
 			lastpos--;
     	}
 	} while ( firstpos<=lastpos );
 	if ( lastpos > start ){
-		qsort(array, lastpos, start);									// ðåêóðñèâíûå âûçîâû
+		qsort(array, lastpos, start);									// Ã°Ã¥ÃªÃ³Ã°Ã±Ã¨Ã¢Ã­Ã»Ã¥ Ã¢Ã»Ã§Ã®Ã¢Ã»
 	}
 	if ( finish > firstpos ){
 		qsort(array, finish, firstpos);
