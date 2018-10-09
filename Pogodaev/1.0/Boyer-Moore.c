@@ -79,3 +79,13 @@ void BMSearch(unsigned char *pattern) {
 
 	free(stringToCompare);
 }
+
+void GetString(unsigned char *str) {
+	int c;
+	int i = 0;
+	while ((c = getc(stdin)) != '\n') {
+		str[i] = c;
+		++i;
+	}
+	str[i] = '\0';
+}
