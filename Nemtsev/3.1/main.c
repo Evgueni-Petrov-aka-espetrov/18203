@@ -8,7 +8,7 @@ void QuickSort(int* A, int numbersCount) {
 
 	while (high > low) {
 		while (A[high] > pivot) --high;
-		while (A[high] < pivot) ++low;
+		while (A[low] < pivot) ++low;
 		if (high > low) {
 			if (A[high] == A[low]) {
 				high--;
