@@ -23,13 +23,18 @@ int main() {
 
 	double dec = fromAToDec(numberA, a);
 	
+	char* decPart;
+	char* fracPart = fromDecFracToB(dec, b);
 	if ((long long)dec == 0) {
 		printf("0.");
 	}
 	else {
-		printf("%s.", fromDecIntToB((long long)dec, b));
+		decPart = fromDecIntToB((long long)dec, b);
+		printf("%s.", decPart);
+		free(decPart);
 	}
-	printf("%s\n", fromDecFracToB(dec, b));
+	printf("%s\n", fracPart);
+	free(fracPart);
 	return 0;
 }
 
@@ -74,7 +79,7 @@ double fromAToDec(char const* numberA, int a) {
 	for (char const* ptr = dot + 1; *ptr != '\0'; ++ptr) {
 		int fromChar = atoi(*ptr);
 		if (fromChar >= a) return -1;
-		result += (double)fromChar*1.0/(double)factor;
+		result += (double)fromChar/factor;
 		factor *= a;
 	}
 
@@ -89,7 +94,10 @@ char* fromDecIntToB(long long dec, int b) {
 		return space;
 	}
 
-	return strcat(fromDecIntToB(dec / b, b), itoa(dec%b));
+	char* sym = itoa(dec%b);
+	result = strcat(fromDecIntToB(dec / b, b), sym);
+	free(sym);
+	return result;
 }
 
 char* fromDecFracToB(double dec, int b) {
@@ -107,24 +115,24 @@ char* fromDecFracToB(double dec, int b) {
 	return result;
 }
 
-bool checkInput(int a, int b, char* numberA) {
+int checkInput(int a, int b, char* numberA) {
 	if (a<2 || a>16 || b<2 || b>16)
-		return false;
+		return 0;
 
 	int numberOfDots = 0;
 	for (int i = 0; i < 14; ++i) {
 		if (numberA[i] == '.') {
 			if (numberOfDots != 0 || i == 0 || numberA[i + 1] == '\0')
-				return false;
+				return 0;
 			++numberOfDots;
 		}
 		else if (numberA[i] == '\0')
-			return true;
+			return 1;
 		else if (atoi(numberA[i]) >= a)
-			return false;
+			return 0;
 	}
 
-	return false;
+	return 0;
 }
 
 void* malloc_s(size_t size) {
