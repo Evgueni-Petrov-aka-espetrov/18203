@@ -39,7 +39,7 @@ int Shift(unsigned char *str, int strLength, int shiftSize) {
 	return shiftSize;
 }
 
-void BMSearchMainPart(unsigned char *pattern, unsigned char *stringToCompare, int patLength, int shiftTable[]) {
+void Search(unsigned char *pattern, unsigned char *stringToCompare, int patLength, int shiftTable[]) {
 	register int count = 1; // This var needs for logging
 	while (TRUE) {  // exit from this loop when the text ends;
 		register int i;
@@ -75,7 +75,17 @@ void BMSearch(unsigned char *pattern) {
 		return;
 	}
 	// 2nd step - main algorithm
-	BMSearchMainPart(pattern, stringToCompare, patLength, shiftTable);
+	Search(pattern, stringToCompare, patLength, shiftTable);
 
 	free(stringToCompare);
+}
+
+void GetString(unsigned char *str) {
+	int c;
+	int i = 0;
+	while ((c = getc(stdin)) != '\n') {
+		str[i] = c;
+		++i;
+	}
+	str[i] = '\0';
 }
