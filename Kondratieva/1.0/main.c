@@ -5,7 +5,7 @@
 #define MAX_LEN_PAT 17
 #define MAX_LEN_TABLE 256
 
-//создание таблицы смещений
+//Г±Г®Г§Г¤Г Г­ГЁГҐ ГІГ ГЎГ«ГЁГ¶Г» Г±Г¬ГҐГ№ГҐГ­ГЁГ©
 void buildShiftTable (const unsigned char* pat, int* shiftTable){
     int len = strlen(pat);
     for (int i = 0; i < MAX_LEN_TABLE; i++)
@@ -14,13 +14,13 @@ void buildShiftTable (const unsigned char* pat, int* shiftTable){
         shiftTable[pat[i]] = len - 1 - i;
 }
 
-//передвинуть shift символов строки с ее конца в ее начало
+//ГЇГҐГ°ГҐГ¤ГўГЁГ­ГіГІГј shift Г±ГЁГ¬ГўГ®Г«Г®Гў Г±ГІГ°Г®ГЄГЁ Г± ГҐГҐ ГЄГ®Г­Г¶Г  Гў ГҐГҐ Г­Г Г·Г Г«Г®
 void makeShift (int shift, unsigned char* str) {
     for (int i = 0; i < shift; i++)
         str[i] = str[strlen(str) - shift + i];
 }
 
-//заполнить буффер начиная с символа с индексом shift
+//Г§Г ГЇГ®Г«Г­ГЁГІГј ГЎГіГґГґГҐГ° Г­Г Г·ГЁГ­Г Гї Г± Г±ГЁГ¬ГўГ®Г«Г  Г± ГЁГ­Г¤ГҐГЄГ±Г®Г¬ shift
 int getString (int shift, unsigned char* str) {
     int count = fread(&str[shift], 1, (size_t) (MAX_LEN_STR - shift), stdin);
     str[shift + count] = '\0';
@@ -29,9 +29,9 @@ int getString (int shift, unsigned char* str) {
     return 0;
 }
 
-//осуществление алгоритма бойера мура на строке
+//Г®Г±ГіГ№ГҐГ±ГІГўГ«ГҐГ­ГЁГҐ Г Г«ГЈГ®Г°ГЁГІГ¬Г  ГЎГ®Г©ГҐГ°Г  Г¬ГіГ°Г  Г­Г  Г±ГІГ°Г®ГЄГҐ
 int Search (const int* shiftTable, const unsigned char* pat, const unsigned char* str, int* n) {
-    int skip = 0, sl = strlen(str), pl = strlen(pat);//skip - длина смещений
+    int skip = 0, sl = strlen(str), pl = strlen(pat);//skip - Г¤Г«ГЁГ­Г  Г±Г¬ГҐГ№ГҐГ­ГЁГ©
     while (sl - skip >= pl) {
         int i = pl;
         do {
@@ -40,11 +40,11 @@ int Search (const int* shiftTable, const unsigned char* pat, const unsigned char
         } while(str[skip + i] == pat[i] && i > 0);
         skip += shiftTable[str[skip + pl - 1]];
     }
-    *n += skip;//длина смещения прошлых работ алгоритма
-    return sl - skip; //количество символов вышедшее за пределы строки
+    *n += skip;//Г¤Г«ГЁГ­Г  Г±Г¬ГҐГ№ГҐГ­ГЁГї ГЇГ°Г®ГёГ«Г»Гµ Г°Г ГЎГ®ГІ Г Г«ГЈГ®Г°ГЁГІГ¬Г 
+    return sl - skip; //ГЄГ®Г«ГЁГ·ГҐГ±ГІГўГ® Г±ГЁГ¬ГўГ®Г«Г®Гў ГўГ»ГёГҐГ¤ГёГҐГҐ Г§Г  ГЇГ°ГҐГ¤ГҐГ«Г» Г±ГІГ°Г®ГЄГЁ
 }
 
-//осуществление алгоритма бойера мура на тексте любой длины
+//Г®Г±ГіГ№ГҐГ±ГІГўГ«ГҐГ­ГЁГҐ Г Г«ГЈГ®Г°ГЁГІГ¬Г  ГЎГ®Г©ГҐГ°Г  Г¬ГіГ°Г  Г­Г  ГІГҐГЄГ±ГІГҐ Г«ГѕГЎГ®Г© Г¤Г«ГЁГ­Г»
 void boyerMoore (const int* shiftTable, unsigned char* pat, unsigned char* str) {
     int textIsOn = 1, shift = 0, n = 0;
     while (textIsOn) {
@@ -55,7 +55,6 @@ void boyerMoore (const int* shiftTable, unsigned char* pat, unsigned char* str) 
 }
 
 int main(){
-    int n = 0;
     unsigned char s[MAX_LEN_STR] = { 0 }, p[MAX_LEN_PAT];
     int shiftTable[MAX_LEN_TABLE];
     scanf("%[^\n]s", p);
