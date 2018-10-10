@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#define TRUE 1
 
 void *SaveMalloc(size_t size) {
 	void *ptr = NULL;
@@ -67,36 +68,37 @@ int CompareStringsAndLog(unsigned char *firstString, unsigned char *secondString
 			break;
 		}
 	}
-	return i;
+	return i; // return strLength if strings are equal
 }
 
 int RKSearch(unsigned char *pattern) {
 	int patLength = strlen(pattern);
+	// calculating pattern's hash value
 	int patHash = HashFuncString(pattern, patLength);
 	fprintf(stdout, "%d ", patHash);
-	int lastEntryPos = -1;
-	int posCount = 1;
+	int lastEntryPos = -1; // last pattern's entry in the text (-1 if the text doesn't contain the pattern)
 	unsigned char *stringToHash = (unsigned char *)SaveMalloc(patLength);
 	if (GetTextToString(stringToHash, patLength, 0) == EOF) {
-		return lastEntryPos;
+		return lastEntryPos; // return -1
 	}
+	// calculating start hash value
 	int currentHash = HashFuncString(stringToHash, patLength);
-	if (currentHash == patHash) {
-		if (CompareStringsAndLog(stringToHash, pattern, patLength, posCount) == patLength) {
-			lastEntryPos = posCount;
-		}
-	}
-	++posCount;
-	int nextChar = '\0';
-	while ((nextChar = getc(stdin)) != EOF) {
-		currentHash = HashNext(currentHash, stringToHash[0], (unsigned char)nextChar, patLength);
-		ShiftString(stringToHash, (unsigned char)nextChar, patLength);
+	int posCount = 1; // position of the first character in stringToHash
+	while (TRUE) {
 		if (patHash == currentHash) {
 			if (CompareStringsAndLog(stringToHash, pattern, patLength, posCount) == patLength) {
 				lastEntryPos = posCount;
 			}
 		}
-		++posCount;
+		int nextChar;
+		if ((nextChar = getc(stdin)) != EOF) {
+			// calculating new hash value
+			currentHash = HashNext(currentHash, stringToHash[0], (unsigned char)nextChar, patLength);
+			// shift the string by 1 character
+			ShiftString(stringToHash, (unsigned char)nextChar, patLength);
+			++posCount;
+		}
+		else break; // if EOF
 	} 
 	free(stringToHash);
 	return lastEntryPos;
