@@ -2,7 +2,7 @@
 #include <iostream>
 using namespace std;
 
-    int quicksort (int *arr, int first, int last)
+    void quicksort (int *arr, int first, int last)
     {
     	int middle, temp;
     	int left = first, right = last;
