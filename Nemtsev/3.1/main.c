@@ -1,14 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void QuickSort(int* A, int numbersCount) {
+void quicksort(int* A, int numbersCount) {
 	int high = numbersCount - 1;
 	int low = 0;
 	int pivot = A[numbersCount / 2];
 
 	while (high > low) {
 		while (A[high] > pivot) --high;
-		while (A[high] < pivot) ++low;
+		while (A[low] < pivot) ++low;
 		if (high > low) {
 			if (A[high] == A[low]) {
 				high--;
@@ -19,12 +19,12 @@ void QuickSort(int* A, int numbersCount) {
 				A[high] = tmp;
 			}
 		}
-	} while (high > low);
+	}
 
 	if (high > 0)
-        QuickSort(A , high);
+        quicksort(A , high);
 	if (numbersCount > low + 1)
-	    QuickSort(A + low, numbersCount - low);
+	    quicksort(A + low, numbersCount - low);
 }
 
 int main()
@@ -39,7 +39,7 @@ int main()
 		scanf("%d", &A[i]);
 	}
 
-	QuickSort(A, numbersCount);
+	quicksort(A, numbersCount);
 
 	for (int i = 0; i < numbersCount; i++) {
 		printf("%d ", A[i]);

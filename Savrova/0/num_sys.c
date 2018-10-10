@@ -55,45 +55,44 @@ string ConvertFrancPart (string digit, int radix1, int radix2)
 }
 int check ( int radix1, int radix2, string digit)
 {
-int dot(0);
+    int dot(0);
     if (radix1 < 2 || radix1 > 16 || radix2 < 2 || radix2 > 16)
         return 1;
-        else
+    else
+    {
+        for (int i = 0; i < digit.length(); i++)
         {
-            for (int i = 0; i < digit.length(); i++)
+            if (CharToNum(digit[i]) >= radix1 && digit[i] != '.')
+                return 1;
+            else if (digit[i] == '.')
             {
-                if (CharToNum(digit[i]) >= radix1 && digit[i] != '.')
+                if (dot != 0 || i == 0 || digit[i + 1] == '\0')
                     return 1;
-                else if (digit[i] == '.')
-                {
-                    if (dot != 0 || i == 0 || digit[i + 1] == '\0')
-                        return 1;
-                    else
-                        dot++;
-                }
+                else
+                    dot++;
             }
         }
+    }
 }
 int main()
 {
-        string digit, digitInt, digitFranc;
-        int radix1, radix2, dot;
-                cin >> radix1 >> radix2 >> digit;
-                if (check ( radix1, radix2, digit) == 1)
-                cout << "bad input";
-                else
-                {
-                    dot = digit.find('.');
-                    if (dot != -1)
-                    {
-                        digitFranc = digit.substr(dot + 1);
-                        digitInt = digit.substr(0, dot );
-                        cout << ConvertIntPart(digitInt, radix1, radix2) << '.' << ConvertFrancPart(digitFranc, radix1, radix2);
-                    }
-                    else
-                        cout << ConvertIntPart(digit, radix1, radix2);
-                }
+    string digit, digitInt, digitFranc;
+    int radix1, radix2, dot;
+    cin >> radix1 >> radix2 >> digit;
+    if (check ( radix1, radix2, digit) == 1)
+        cout << "bad input";
+    else
+    {
+        dot = digit.find('.');
+        if (dot != -1)
+        {
+            digitFranc = digit.substr(dot + 1);
+            digitInt = digit.substr(0, dot );
+            cout << ConvertIntPart(digitInt, radix1, radix2) << '.' << ConvertFrancPart(digitFranc, radix1, radix2);
+        }
+        else
+            cout << ConvertIntPart(digit, radix1, radix2);
+    }
     return 0;
-
 }
 
