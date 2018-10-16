@@ -40,6 +40,10 @@ void search(char* pattern, FILE* input) {
 	int length = 0;
 	for (; pattern[length] != '\0'; ++length); /// length without terminating null
 	char* buffer = (char*)malloc(sizeof(char)*(length + 1));
+	if (!buffer) {
+		printf("no memory");
+		exit(1);
+	}
 	buffer[length] = '\0';
 	if (!fillBuffer(buffer, length, length, input)) return;
 
