@@ -1,16 +1,27 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <math.h>
 
 const int MAX_LENGTH = 18;
 
+int pow3(int grade){
+	static int initialized = 0;
+	static int gradeArray[MAX_LENGTH - 2];
+	if (!initialized){
+		int grade = 1;
+		for (int i = 0; i < MAX_LENGTH - 2; ++i){
+			gradeArray[i] = grade;
+			grade *= 3;
+		}
+		initialized = 1;
+	}
+	return gradeArray[grade];
+}
+
 int hashFunc(char* str) {
 	int result = 0;
-	int grade = 1;
 	for (int i = 0; str[i] != '\0'; ++i) {
-		result += (str[i] % 3)*grade;
-		grade *= 3;
+		result += (str[i] % 3)*pow3(i);
 	}
 	return result;
 }
@@ -21,7 +32,7 @@ int shift(char* buffer, int length, int previousHash) {
 	strcpy(buffer, buffer + 1);
 	int charcode;
 	if ((charcode = getchar()) == EOF) return EOF;
-	previousHash += (charcode%3)*pow(3,length-1);
+	previousHash += (charcode % 3)*pow3(length - 1);
 	buffer[length - 1] = charcode;
 	buffer[length] = 0;
 	int trueHash = hashFunc(buffer);
@@ -53,7 +64,7 @@ void search(char* pattern) {
 
 	int currentPosition = 1;
 	int currentHash = hashFunc(buffer);
-	for (;;++currentPosition) {
+	for (;; ++currentPosition) {
 		if (currentHash == patternHash) compareStrings(pattern, buffer, currentPosition);
 		if ((currentHash = shift(buffer, length, currentHash)) == EOF) {
 			free(buffer);
