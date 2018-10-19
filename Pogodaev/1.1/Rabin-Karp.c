@@ -1,16 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "rabinkarp.h"
 #define TRUE 1
-
-void *SaveMalloc(size_t size) {
-	void *ptr = NULL;
-	if ((ptr = malloc(size)) == NULL) {
-		fprintf(stderr, "not enough memory");
-		exit(-1);
-	}
-	else return ptr; 
-}
 
 int GetTextToString(unsigned char *str, int strLength, int startPos) {
 	for (int i = startPos; i < strLength; ++i) {
@@ -25,7 +17,7 @@ int GetTextToString(unsigned char *str, int strLength, int startPos) {
 	return strLength - startPos; // return number of filled characters
 }
 
-int power(int base, int p)
+int Power(int base, int p)
 {
 	int result = 1;
 	while (p)
@@ -37,11 +29,19 @@ int power(int base, int p)
 	return result;
 }
 
-int HashFuncChar(unsigned char ch, int number) {
-	return (ch % 3) * power(3, number);
+int PowerOfThree(int p) {
+	const static int powerOfThree[16] = { 1, 3, 9, 27, 81, 243, 729, 2187, 6561, 19683, 59049, 177147, 531441, 1594323, 4782969, 14348907 };
+	if (p >= 0 && p <= 15) {
+		return powerOfThree[p];
+	} 
+	else return Power(3, p);
 }
 
-int HashFuncString(unsigned char *string, int stringLength) {
+int HashFuncChar(unsigned char ch, int number) {
+	return (ch % 3) * PowerOfThree(number);
+}
+
+int HashFuncString(const unsigned char *string, int stringLength) {
 	int sum = 0;
 	for (int i = 0; i < stringLength; ++i) {
 		sum += HashFuncChar(string[i], i);
@@ -53,18 +53,11 @@ int HashNext(int prevHash, unsigned char toDelete, unsigned char toAdd, int patL
 	return (prevHash - HashFuncChar(toDelete, 0)) / 3 + HashFuncChar(toAdd, patLength - 1);
 }
 
-void ShiftString(unsigned char *string, unsigned char ch, int strLength) {
-	for (register int i = 1; i < strLength; ++i) {
-		string[i - 1] = string[i];
-	}
-	string[strLength - 1] = ch;
-}
-
-int CompareStringsAndLog(unsigned char *firstString, unsigned char *secondString, int strLength, int posCount) {
+int CompareStringsAndLog(const unsigned char *string, const unsigned char *pattern, int strLength, int posCount) {
 	register int i = 0;
 	for (; i < strLength; ++i) {
-		fprintf(stdout, "%d ", posCount + i); // logging
-		if (firstString[i] != secondString[i]) {
+		fprintf(stdout, "%d ", posCount + 1 + i); // logging
+		if (pattern[i] != string[(posCount + i) % strLength] /* i-th character of stringToHash */) {
 			break;
 		}
 	}
@@ -73,34 +66,34 @@ int CompareStringsAndLog(unsigned char *firstString, unsigned char *secondString
 
 int RKSearch(unsigned char *pattern) {
 	int patLength = strlen(pattern);
-	// calculating pattern's hash value
 	int patHash = HashFuncString(pattern, patLength);
 	fprintf(stdout, "%d ", patHash);
 	int lastEntryPos = -1; // last pattern's entry in the text (-1 if the text doesn't contain the pattern)
-	unsigned char *stringToHash = (unsigned char *)SaveMalloc(patLength);
+	unsigned char stringToHash[MAX_PAT_LEN - 1]; // stringToHash will be a looped string
 	if (GetTextToString(stringToHash, patLength, 0) == EOF) {
-		return lastEntryPos; // return -1
-	}
+		return lastEntryPos;
+	} 
 	// calculating start hash value
 	int currentHash = HashFuncString(stringToHash, patLength);
-	int posCount = 1; // position of the first character in stringToHash
+	int posCount = 0; // position in the text of the first character in stringToHash
 	while (TRUE) {
 		if (patHash == currentHash) {
 			if (CompareStringsAndLog(stringToHash, pattern, patLength, posCount) == patLength) {
-				lastEntryPos = posCount;
+				lastEntryPos = posCount + 1;
 			}
 		}
 		int nextChar;
 		if ((nextChar = getc(stdin)) != EOF) {
 			// calculating new hash value
-			currentHash = HashNext(currentHash, stringToHash[0], (unsigned char)nextChar, patLength);
-			// shift the string by 1 character
-			ShiftString(stringToHash, (unsigned char)nextChar, patLength);
+			currentHash = HashNext(currentHash, stringToHash[posCount % patLength], // first character of stringToHash
+												(unsigned char)nextChar, patLength);
+			// add next character from the text to the end of stringToHash
+			stringToHash[posCount % patLength] = (unsigned char)nextChar;
+			// start from next character
 			++posCount;
 		}
 		else break; // if EOF
 	} 
-	free(stringToHash);
 	return lastEntryPos;
 }
 
