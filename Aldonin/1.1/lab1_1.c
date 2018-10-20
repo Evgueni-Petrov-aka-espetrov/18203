@@ -2,7 +2,7 @@
 #include "string.h"
 #include "stdbool.h"
 
-#define MAXSTR 16
+#define MAXSTR 17 //16+\0
 
 const int exp3[MAXSTR] = {1, 3, 9, 27, 81, 243, 729, 2187, 6561, 19683, 59049, 177147, 531441, 1594323, 4782969, 14348907};
 
@@ -39,7 +39,7 @@ int main()
     
     unsigned char example[MAXSTR];
     fscanf(input,"%[^\n]",example);
-    fseek(input,1,SEEK_CUR);
+    fgetc(input) //Съедает \n. fseek не работает на Windows.
     int length = strlen((char*)example);
     int exampleHash = hashCreate(example,length);
     fprintf(output,"%d ",exampleHash);
