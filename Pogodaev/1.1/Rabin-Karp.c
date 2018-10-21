@@ -64,7 +64,7 @@ int CompareStringsAndLog(const unsigned char *string, const unsigned char *patte
 	return i; // return strLength if strings are equal
 }
 
-int RKSearch(unsigned char *pattern) {
+int RKSearch(const unsigned char *pattern) {
 	int patLength = strlen(pattern);
 	int patHash = HashFuncString(pattern, patLength);
 	fprintf(stdout, "%d ", patHash);
