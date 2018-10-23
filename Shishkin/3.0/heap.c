@@ -7,7 +7,6 @@ void swap(int symbols[], int n, int m) {
 	symbols[m] = midchar;
 }
 void sort(int array[], int last, int pos) {
-	//int whileexit = last;
 	while (2 * pos + 1 <= last) {
 		int var = 0;
 		if (array[pos] >= array[2 * pos + 1]) var = var + 1;
