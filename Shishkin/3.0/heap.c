@@ -2,19 +2,18 @@
 #include <string.h>
 #include <malloc.h>
 void swap(int symbols[], int n, int m) {
-	int midchar;
-	midchar = symbols[n];
+	int midchar = symbols[n];
 	symbols[n] = symbols[m];
 	symbols[m] = midchar;
 }
 void sort(int array[], int last, int pos) {
-	int whileexit = last;
+	//int whileexit = last;
 	while (2 * pos + 1 <= last) {
 		int var = 0;
 		if (array[pos] >= array[2 * pos + 1]) var = var + 1;
 		if ((array[pos] >= array[2 * pos + 2]) && (2 * pos + 2 <= last)) var = var + 2;
 
-		if (var == 0) pos = whileexit;
+		if (var == 0) break;
 		if (var == 1) {
 			swap(array, pos, 2 * pos + 1);
 			pos = 2 * pos + 1;
