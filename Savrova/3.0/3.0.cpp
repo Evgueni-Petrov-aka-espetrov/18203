@@ -8,18 +8,18 @@ void heap (int *arr, int length)
     {
         if (arr[2 * i + 2] >= arr[i] && (2 * i + 2) < length )
         {
-        temp = arr[i];
-        arr[i] = arr[2 * i + 2];
-        arr[2 * i + 2] = temp;
+		temp = arr[i];
+		arr[i] = arr[2 * i + 2];
+		arr[2 * i + 2] = temp;
         }
-    if (arr[2 * i + 1] >= arr[i] && (2 * i + 1) < length )
-    {
-        temp = arr[i];
-        arr[i] = arr[2 * i + 1];
-        arr[2 * i + 1] = temp;
-    }
+    	if (arr[2 * i + 1] >= arr[i] && (2 * i + 1) < length )
+        {
+		temp = arr[i];
+		arr[i] = arr[2 * i + 1];
+		arr[2 * i + 1] = temp;
+        }
 
-}
+    }
 }
 void sort(int *arr, int length)
 {
@@ -41,15 +41,14 @@ int main()
     arr = (int*)malloc(length * sizeof(int));
     if (arr != NULL)
     {
-    for (int index = 0; index < length; index++)
-    	cin >> arr[index];
-
-    sort (arr, length);
 	for (int index = 0; index < length; index++)
-    	cout << arr[index]<< ' ';
+		cin >> arr[index];
+	sort (arr, length);
+	for (int index = 0; index < length; index++)
+		cout << arr[index]<< ' ';
     }
     free (arr);
-return 0;
+    return 0;
 }
 
 
