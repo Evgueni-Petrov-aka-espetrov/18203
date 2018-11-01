@@ -2,8 +2,8 @@
 #include <string.h>
 #include <stdlib.h>
 
-void* malloc_s(size_t size);
-bool checkInput(int a, int b, char* numberA);
+void* mallocSafe(size_t size);
+int checkInput(int a, int b, char* numberA);
 int atoi(char a);
 char* itoa(int i);
 double fromAToDec(char const* numberA, int a);
@@ -22,7 +22,7 @@ int main() {
 	}
 
 	double dec = fromAToDec(numberA, a);
-	
+
 	char* decPart;
 	char* fracPart = fromDecFracToB(dec, b);
 	if ((long long)dec == 0) {
@@ -40,7 +40,7 @@ int main() {
 
 int atoi(char a) {
 	int result = 17;
-	if (a >= '0' && a <= '9') // ? charcode('0') < charcode('9')
+	if (a >= '0' && a <= '9')
 		result = a - '0';
 	else if (a >= 'a' && a <= 'f')
 		result = a - 'a' + 10;
@@ -51,7 +51,7 @@ int atoi(char a) {
 }
 
 char* itoa(int i) {
-	char* result = (char*)malloc_s(sizeof(char) * 2);
+	char* result = (char*)mallocSafe(sizeof(char) * 2);
 	result[1] = '\0';
 	if (i >= 0 && i <= 9)
 		result[0] = (char)(i + '0');
@@ -66,7 +66,7 @@ double fromAToDec(char const* numberA, int a) {
 	double result = 0;
 	long long factor = 1;
 	char const* dot = numberA;
-	for (; (*dot != '.')&&(*dot != '\0'); ++dot);
+	for (; (*dot != '.') && (*dot != '\0'); ++dot);
 	for (char const* ptr = dot - 1; ptr >= numberA; --ptr) {
 		int fromChar = atoi(*ptr);
 		result += fromChar*factor;
@@ -79,7 +79,7 @@ double fromAToDec(char const* numberA, int a) {
 	for (char const* ptr = dot + 1; *ptr != '\0'; ++ptr) {
 		int fromChar = atoi(*ptr);
 		if (fromChar >= a) return -1;
-		result += (double)fromChar/factor;
+		result += (double)fromChar / factor;
 		factor *= a;
 	}
 
@@ -89,13 +89,13 @@ double fromAToDec(char const* numberA, int a) {
 char* fromDecIntToB(long long dec, int b) {
 
 	if (dec == 0) {
-		char* space = (char*)malloc_s(sizeof(char) * 100);
+		char* space = (char*)mallocSafe(sizeof(char) * 100);
 		space[0] = '\0';
 		return space;
 	}
 
 	char* sym = itoa(dec%b);
-	result = strcat(fromDecIntToB(dec / b, b), sym);
+	char* result = strcat(fromDecIntToB(dec / b, b), sym);
 	free(sym);
 	return result;
 }
@@ -103,7 +103,7 @@ char* fromDecIntToB(long long dec, int b) {
 char* fromDecFracToB(double dec, int b) {
 
 	dec = dec - (int)dec;
-	char* result = (char*)malloc_s(sizeof(char) * 13);
+	char* result = (char*)mallocSafe(sizeof(char) * 13);
 	result[0] = '\0';
 	for (int i = 0; i < 12; ++i) {
 		dec *= b;
@@ -135,7 +135,7 @@ int checkInput(int a, int b, char* numberA) {
 	return 0;
 }
 
-void* malloc_s(size_t size) {
+void* mallocSafe(size_t size) {
 	void* allocated = malloc(size);
 	if (!allocated) {
 		printf("ERROR: BAD_ALLOCATION");
