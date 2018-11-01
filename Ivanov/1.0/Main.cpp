@@ -7,17 +7,19 @@ const int MAX_PATTERN_LENGTH = 18;
 int fillBuffer(char* buffer, int shift, int length, FILE* input);
 void buildShiftTable(char* pattern, int* table, int length);
 void search(char* pattern, FILE* input);
-FILE* fopenSafe(const char* filename, const char* mode);
 char* fgetsWithoutNewline(char* buffer, int maxCount, FILE* stream);
 
 int main() {
-	FILE* input = fopenSafe("in.txt", "r");
+	FILE* input = fopen("in.txt", "r");
+	if (input == NULL) {
+		printf("cannot open file\n");
+		return 1;
+	}
 	char pattern[MAX_PATTERN_LENGTH];
 	fgetsWithoutNewline(pattern, MAX_PATTERN_LENGTH, input);
 	search(pattern, input);
 	fclose(input);
 	return 0;
-
 }
 
 int fillBuffer(char* buffer, int shift, int length, FILE* input) { ///length without terminating null
@@ -40,7 +42,7 @@ void search(char* pattern, FILE* input) {
 	int length = 0;
 	for (; pattern[length] != '\0'; ++length); /// length without terminating null
 	char* buffer = (char*)malloc(sizeof(char)*(length + 1));
-	if (!buffer) {
+	if (buffer == NULL) {
 		printf("no memory");
 		exit(1);
 	}
@@ -74,21 +76,13 @@ void search(char* pattern, FILE* input) {
 	}
 }
 
-FILE* fopenSafe(const char* filename, const char* mode) {
-	FILE* toOpen;
-	if (!(toOpen = fopen(filename, mode))) {
-		printf("cannot open file\n");
-		exit(1);
-	}
-	return toOpen;
-}
-
 char* fgetsWithoutNewline(char* buffer, int maxCount, FILE* stream) {
-	fgets(buffer, maxCount, stream);
+	char* result = fgets(buffer, maxCount, stream);
 	for (int i = 0; buffer[i] != '\0'; ++i) {
 		if (buffer[i] == '\n') {
 			buffer[i] = '\0';
 			break;
 		}
 	}
+	return result;
 }
