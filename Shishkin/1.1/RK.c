@@ -18,120 +18,87 @@ int firstread(unsigned char hay[], int lengthneedle, FILE *fin) {
 		}
 		else {
 			hay[pos] = symbol;
-			//printf(" %d --- %c ", i, symbol);
 			pos++;
 		}
 	}
-	//printf("\n");
 	if (errornum > 0) return 1;
 	else return 0;
 }
+
 int nextread(unsigned char hay[], int lengthneedle, FILE *fin) {
-	int i;
 	char symbol;
 	int errornum = 0;
+	int i;
 	for (i = 1; i < lengthneedle; i++) {
 		hay[i - 1] = hay[i];
 	}
-
 	symbol = getc(fin);
 	if (symbol == EOF) {
-		i = lengthneedle + 1;
 		errornum++;
 	}
 	else {
 		hay[lengthneedle - 1] = symbol;
-		//printf(" %d --- %c ", i, symbol);
 	}
 	if (errornum > 0) return 1;
 	else return 0;
 }
-int power(int a, int n) {
-	int i;
-	int t;
-	t = 1;
-	for (i = 1; i <= n; i++) {
-		t = t*a;
-	}
-	return t;
+
+int power(int n) {
+	int powersof3[16] = {1, 3, 9, 27, 81, 243, 729, 2187, 6561, 19683, 59049, 177147, 531441, 1594323, 4782969, 14348907};
+	return powersof3[n];
 }
+
 int hash(unsigned char array[], int lengthneedle) {
 	int result = 0;
 	int i;
 	for (i = 0; i <= lengthneedle - 1; i++) {
-		//printf("  %d  ", result);
-		result = result + ((array[i] % 3)*power(3, i));
-		//printf("  %d  ", result);
+		result = result + ((array[i] % 3)*power(i));
 	}
-	//printf("\n");
 	return result;
 }
 
-void compare(unsigned char needle[], unsigned char hay[], int start, int lengthneedle, FILE *fout) {
-	int sim = 0;
-	int i, hsned, hshay;
-	//printf("start  ");
-	hsned = hash(needle, lengthneedle);
-	//printf("  stop  ");
-	hshay = hash(hay, lengthneedle);
-
-	if (hsned == hshay) {
-		//for (i = 0; i<=lengthneedle-1; i++) {
-		//	if (needle[i] == hay[i]) {
-		//		fprintf(fout, "%d ", i + 1 + start);
-		//	}
-		i = 0;
+void compare(unsigned char needle[], unsigned char hay[], int start, int lengthneedle, int defhash, int hayhash, FILE *fout) {
+	if (defhash == hayhash) {
+		int i = 0;
 		do {
 			fprintf(fout, "%d ", i + 1 + start);
 			i++;
 		} while ((i <= lengthneedle - 1) && (needle[i-1] == hay[i-1]));
-		}	
-
-	}
+	}	
+}
 
 void rabinkarp(unsigned char needle[], unsigned char hay[], int lengthneedle, FILE *fin, FILE *fout) {
-	int readres, compareres;
-	//int finish = lengthneedle - 1;
-	//printf("%d", finish);
 	int start = 0;
-	fprintf(fout, "%d ", hash(needle, lengthneedle));
-	readres = firstread(hay, lengthneedle, fin);
-	while (readres != 1) {
-		compare(needle, hay, start, lengthneedle, fout);
-		//printf("hfgjgkj");
-		//if (compareres == 0) {
-
-
-		//fprintarr(start, lengthneedle, fout);
-		//}
-		start = start + 1;
-		//finish = finish + 1;
+	int defhash = hash(needle, lengthneedle);
+	float parthash;
+	fprintf(fout, "%d ", defhash);
+	int readres = firstread(hay, lengthneedle, fin);
+	int hayhash = hash(hay, lengthneedle);
+	while (readres != 1) {		
+		compare(needle, hay, start, lengthneedle, defhash, hayhash, fout);
+		start++;
+		parthash = (hayhash - hay[0]%3)/3;
 		readres = nextread(hay, lengthneedle, fin);
+		hayhash = parthash + (hay[lengthneedle-1]%3)*power(lengthneedle-1);
 	}
 }
 
 int main() {
-	FILE *fin, *fout;
-
-	unsigned char needle[16];
-	unsigned char haystack[16];
-	unsigned char f, symbol;
-	int c, d, i, lengthneedle;
-	fout = fopen("out.txt", "w");
-	fin = fopen("in.txt", "r");
+	FILE* fout = fopen("out.txt", "w");
+	FILE* fin = fopen("in.txt", "r");
 	if (fin == NULL)
 		fprintf(fout, "File could not be opened.");
 	else {
-		i = 0;
+		unsigned char needle[16];
+		unsigned char haystack[16];
+		unsigned char symbol;
+		int i = 0;
 		while ((symbol = getc(fin)) != '\n'){
 			needle[i] = symbol;
-
 			i++;
 		}
-		lengthneedle = i;
+		int lengthneedle = i;
 		rabinkarp(needle, haystack, lengthneedle, fin, fout);
-
-
 	}
 	fclose(fin);
 	fclose(fout);
