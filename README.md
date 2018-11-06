@@ -9,5 +9,5 @@ Programming in C -- group 18203 -- practice
 ![alt text](https://avatars1.githubusercontent.com/u/43092680?s=400&v=4 "Погодаев") | 4 | 5 | 4
 ![alt text](https://avatars1.githubusercontent.com/u/44063918?s=460&v=4 "Кондратьев") | - | - | 5
 ![alt text](https://avatars2.githubusercontent.com/u/44012242?s=460&v=4 "Кондратьева") | - | - | 4
-![alt text](https://avatars1.githubusercontent.com/u/43515119?s=88&v=4 "Немцев") | - | - | 4
+![alt text](https://avatars1.githubusercontent.com/u/43515119?s=460&v=4 "Немцев") | - | - | 4
 ![alt text](https://avatars1.githubusercontent.com/u/42988190?s=88&v=4 "Тычинин") | - | - | 4
