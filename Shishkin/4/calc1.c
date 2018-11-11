@@ -1,5 +1,15 @@
 #include <stdio.h> 
 #include <string.h> 
+int readfile(FILE *fin, char symbols[1000]) {
+	int i;
+	char symbol;
+	while ((symbol = getc(fin)) != '\n'){
+			symbols[i] = symbol;
+			i++;
+		}
+	return i;
+}
+
 int check1(char array[], int amount) { 
 	int i; 
 	int errornum = 0; 
@@ -36,6 +46,7 @@ int convert(char symbols[], int enter[], int length) {
 			int j; 
 			for (j = i + 1; j<length; j++) enter[j - 1] = enter[j]; 
 			length--; 
+			i--;
 		} 
 	} 
 	return length; 
@@ -58,19 +69,23 @@ int check2(int array[], int amount) {
 			amountob++; 
 		} 
 	} 
+	//amount rule
+	if ((amount == 1)&&(array[0] < 0)) errornum++;
+	if (amount == 2) errornum++;
+	if (amount == 0) errornum++; 
 	//bracket rule 
 	if (amountob != amountcb) errornum++; 
 	if (errornum == 0) { 
 		i = 0; 
-		j = amount - 1; 
+		j = 0; 
 		while (amountcb > 0) { 
-			while (i != -6) i++; 
-			while (j != -5) j--; 
+			while ((checkarray[i] != -6)&&(i < amount)) i++; 
+			while ((checkarray[j] != -5)&&(j < amount)) j++; 
 			if (i < j) { 
 				checkarray[i] = 0; 
 				checkarray[j] = 0; 
 				i++; 
-				j--; 
+				j++; 
 				amountcb--; 
 			} 
 			else { 
@@ -92,25 +107,24 @@ int check2(int array[], int amount) {
 				else {
 					if ((array[i] == -6) && (array[i-1] > 0)) errornum++;
 					if ((array[i] == -5) && (array[i+1] > 0)) errornum++;
+					if ((array[i] == -6) && (array[i+1] == -5)) errornum++;
 				}
 			}
 		}
-		if ((array[0] < 0) && (array[i-1] > -5)) errornum++;
-		if ((array[amount-1] < 0) && (array[i-1] > -5)) errornum++;
+		if ((array[0] < 0) && (array[0] > -5)) errornum++;
+		if ((array[amount-1] < 0) && (array[amount-1] > -5)) errornum++;
 	} 
 	return errornum; 
 } 
 
-
 int createPol(int enter[], int pol[], int amount) { 
-	//int pol[1000]; 
 	int operands[1000]; 
 	int polcount = 0; 
 	int opercount = 0;
-	 
-	int i, changepolcount, changeopercount; 
-
+	int i;
 	for (i = 0; i<amount; i++) { 
+		int changeopercount = 0; 
+		int changepolcount = 0;
 		if (enter[i] >= 0) { 
 			pol[polcount] = enter[i]; 
 			changepolcount = 1; 
@@ -135,7 +149,7 @@ int createPol(int enter[], int pol[], int amount) {
 								pol[polcount] = operands[k];
 								polcount++;
 							}
-							opercount = j+1;
+							opercount = j;
 						} 
 						if (enter[i] == -6) {
 							operands[opercount] = enter[i];
@@ -159,41 +173,64 @@ int createPol(int enter[], int pol[], int amount) {
 		polcount = polcount + changepolcount; 
 	}
 	for (i=opercount-1; i>=0; i--) {
-		
+		pol[polcount] = operands[i];
+		polcount++;
 	}
 	return polcount;
 }
 
-void readPol (int pol[], int amount) {
-	int result = 0;
-	int i;
-	for (i=0; i< amount; i++) {
-		if (pol[i] < 0) {
+int readPol (int pol[], int amount, int divisionbyzero[]) {
+	int result[1000];
+	int i, j;
+	int k = 0;
+	for (i=0; i < amount; i++) {
+		if (pol[i] >= 0) {
+			result[k] = pol[i];
+			k++;
 		}
-	}	
+		if (pol[i] < 0) {
+			if (pol[i] == -1) {
+				if (result[k-1] == 0) {
+					divisionbyzero[0] = 1;
+					return 1;
+				}
+				else result[k-2] = result[k-2] / result[k-1];
+			}
+			if (pol[i] == -2) result[k-2] = result[k-2] * result[k-1];
+			if (pol[i] == -3) result[k-2] = result[k-2] - result[k-1];
+			if (pol[i] == -4) result[k-2] = result[k-2] + result[k-1];
+			k = k - 1;
+		}
+	}
+	return result[0];	
 }
 
 int main() { 
-	char symbols[1000]; 
-	int enter[1000];
-	int pol[1000]; 
-	//int amount; 
 	FILE *fout = fopen("out.txt", "w"); 
 	FILE *fin = fopen("in.txt", "r"); 
 	if (fin == NULL) 
 		fprintf(fout, "File could not be opened."); 
 	else { 
-		int amount; 
-		fscanf(fin, "%s", symbols); 
-		amount = strlen(symbols); 
-		if (check1(symbols, amount) > 0) fprintf(fout, "syntax error"); 
+		char symbols[1000]; 
+		int amount = readfile(fin, symbols); 
+		if (check1(symbols, amount) > 0) fprintf(fout, "syntax error1"); 
 		else { 
+			int enter[1000];
 			amount = convert(symbols, enter, amount); 
-			if (check2(enter, amount) > 0) fprintf(fout, "syntax error"); 
-				else {
-					amount = createPol(enter, pol, amount);
-					readPol(pol, amount);
-
-
-} 
+			if (check2(enter, amount) > 0) fprintf(fout, "syntax error2"); 
+			else {
+				int pol[1000]; 
+				amount = createPol(enter, pol, amount);
+				int dbz[1];
+				int result = readPol(pol, amount, dbz);
+				if (dbz[0] == 1) fprintf(fout, "division by zero");
+				else fprintf(fout, "%d", result);
+			}
+		}
+	}
+	return 0;
 }
+
+
+
+
