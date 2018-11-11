@@ -6,9 +6,10 @@ int main()
 /*-----------------------------------------------*/
     int b1, b2;
     char enter[255];
+    FILE *input = fopen("in.txt","r");
 
-    scanf("%d %d",&b1,&b2);
-    scanf("%s",enter);
+    fscanf(input,"%d %d",&b1,&b2);
+    fscanf(input,"%s",enter);
 /*-----------------------------------------------*/
     int test = failSafe(b1, b2, enter);
     if(test != 0)
@@ -21,7 +22,9 @@ int main()
     char c[255];
 
     doubleToNum(c, b2, d);
-    printf("%s",c);
+    
+    FILE *output = fopen("out.txt","w");
+    fprintf(output,"%s",c);
 /*-----------------------------------------------*/
     return 0;
 }
