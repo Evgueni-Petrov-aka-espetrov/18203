@@ -3,7 +3,7 @@
 #include <ctype.h>
 #include <stdlib.h>
 
-void swap(char *a, char *b) {
+void Swap(char *a, char *b) {
 	char t = *a;
 	*a = *b;
 	*b = t;
@@ -31,12 +31,12 @@ void GeneratePerm(char *string, int size) {
 	while (string[j - 1] <= string[i - 1]) {
 		--j;
 	}
-	swap(&string[i - 1], &string[j - 1]);
+	Swap(&string[i - 1], &string[j - 1]);
 	++i;
 	j = size;
 	while (i < j)
 	{
-		swap(&string[i - 1], &string[j - 1]);
+		Swap(&string[i - 1], &string[j - 1]);
 		++i;
 		--j;
 	}
