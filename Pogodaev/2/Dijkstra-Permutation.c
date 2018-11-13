@@ -22,24 +22,26 @@ int IsInLexOrder(const char *string, int size) {
 	return 0;
 }
 
+void ReversePartOfString(char *string, int startPos, int lastPos) {
+	while (startPos < lastPos)
+	{
+		Swap(&string[startPos], &string[lastPos]);
+		++startPos;
+		--lastPos;
+	}
+}
+
 void GeneratePerm(char *string, int size) {
-	int i = size - 1;
-	while (string[i] <= string[i - 1]) {
+	int i = size - 2;
+	while (string[i] > string[i + 1]) {
 		--i;
 	}
-	int j = size;
-	while (string[j - 1] <= string[i - 1]) {
+	int j = size - 1;
+	while (string[j] < string[i]) {
 		--j;
 	}
-	Swap(&string[i - 1], &string[j - 1]);
-	++i;
-	j = size;
-	while (i < j)
-	{
-		Swap(&string[i - 1], &string[j - 1]);
-		++i;
-		--j;
-	}
+	Swap(&string[i], &string[j]);
+	ReversePartOfString(string, i + 1, size - 1);
 }
 
 int GenNext(char *string, int size) {
