@@ -1,34 +1,11 @@
 #include <stdio.h>
 #include <string.h>
 
-int firstread(unsigned char hay[], int lengthneedle, FILE *fin) {
-	int i;
-	int pos = 0;
-	char symbol;
-	int errornum = 0;
-	for (i = 0; i < lengthneedle; i++){
-		symbol = getc(fin);
-		if (symbol == EOF) {
-			i = lengthneedle + 1;
-			errornum++;
-		}
-		else {
-			hay[pos] = symbol;
-			pos++;
-		}
-	}
-	if (errornum > 0) return 1;
-	else return 0;
-}
-
-int nextread(unsigned char hay[], int lengthneedle, int move, FILE *fin) {
-	char symbol;
+int read(FILE *fin, unsigned char hay[], int move, int lengthneedle){
 	int errornum = 0;
 	int i;
-	for (i = move; i < lengthneedle; i++) {
-		hay[i - move] = hay[i];
-	}
 	for (i = lengthneedle - move; i < lengthneedle; i++) {
+		char symbol;
 		symbol = getc(fin);
 		if (symbol == EOF) {
 			i = lengthneedle + 1;
@@ -38,17 +15,55 @@ int nextread(unsigned char hay[], int lengthneedle, int move, FILE *fin) {
 			hay[i] = symbol;
 		}
 	}
+	return errornum;
+}
+int firstread(unsigned char hay[], int lengthneedle, FILE *fin) {
+	//int i;
+	int errornum = 0;
+	//for (i = 0; i < lengthneedle; i++){
+	//	char symbol;
+	//	symbol = getc(fin);
+	//	if (symbol == EOF) {
+	//		i = lengthneedle + 1;
+	//		errornum++;
+	//	}
+	//	else {
+	//		hay[i] = symbol;
+	//	}
+	//}
+	errornum = read(fin, hay, lengthneedle, lengthneedle);
+	if (errornum > 0) return 1;
+	else return 0;
+}
+
+int nextread(unsigned char hay[], int lengthneedle, int move, FILE *fin) {
+	int errornum = 0;
+	int i;
+	for (i = move; i < lengthneedle; i++) {
+		hay[i - move] = hay[i];
+	}
+	//for (i = lengthneedle - move; i < lengthneedle; i++) {
+	//	char symbol;
+	//	symbol = getc(fin);
+	//	if (symbol == EOF) {
+	//		i = lengthneedle + 1;
+	//		errornum++;
+	//	}
+	//	else {
+	//		hay[i] = symbol;
+	//	}
+	//}
+	errornum = read(fin, hay, move, lengthneedle);
 	if (errornum > 0) return 1;
 	else return 0;
 }
 void booyer(unsigned char haystack[], unsigned char needle[], FILE *fout, FILE *fin, int lengthneedle) {
-	int ascichar1;
 	int table[256];
 	int i;
-	int move;
 	for (i = 0; i<256; i++)
 		table[i] = lengthneedle;
 	for (i = lengthneedle - 2; i >= 0; i--){
+		int ascichar1;
 		ascichar1 = needle[i];
 		if (table[ascichar1] == lengthneedle) table[ascichar1] = lengthneedle - 1 - i;
 	}
@@ -62,6 +77,7 @@ void booyer(unsigned char haystack[], unsigned char needle[], FILE *fout, FILE *
 			count++;
 			if (haystack[i] != needle[i]) break;
 		}
+		int move;
 		//finished for
 		if (i<0) {
 			move = lengthneedle;
