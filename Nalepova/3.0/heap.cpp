@@ -1,36 +1,37 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include "stdio.h"
 #include "malloc.h"
-void Shift(int a[], int size)
+void Swap(int *a, int *b)
 {
-	int temp;
-	for (int i = (size - 1) / 2; i >= 0; i--)
-	{
-		if (a[2 * i + 2] >= a[i] && (2 * i + 2) < size)
-		{
-			temp = a[i];
-			a[i] = a[2 * i + 2];
-			a[2 * i + 2] = temp;
-		}
-		if (a[2 * i + 1] >= a[i] && (2 * i + 1) < size)
-		{
-			temp = a[i];
-			a[i] = a[2 * i + 1];
-			a[2 * i + 1] = temp;
-		}
-	}
+	int temp = *a;
+	*a = *b;
+	*b = temp;
+}
 
+void Shift(int a[], int size, int i)
+{
+	int indexOfMax = i;
+	if (a[2 * i + 1] >= a[indexOfMax] && (2 * i + 1) < size)
+		indexOfMax = 2 * i + 1;
+	if (a[2 * i + 2] >= a[indexOfMax] && (2 * i + 2) < size)
+		indexOfMax = 2 * i + 2;
+		
+	if (a[indexOfMax] != a[i])
+	{
+		Swap(&a[i], &a[indexOfMax]);
+		Shift(a, size, indexOfMax);
+	}
 }
 void HeapSort(int a[], int size)
 {
-	int temp;
-	Shift(a, size);
+	for (int i = size / 2 - 1; i >= 0; i--) 
+	{
+		Shift(a, size, i);
+	}
 	for (int i = size - 1; i >= 0; i--)
 	{
-		temp = a[0];
-		a[0] = a[i];
-		a[i] = temp;
-		Shift(a, i);
+		Swap(&a[0], &a[i]);
+		Shift(a, i, 0);
 	}
 }
 void main()
