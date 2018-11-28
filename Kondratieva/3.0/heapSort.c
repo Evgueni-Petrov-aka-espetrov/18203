@@ -2,7 +2,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-
 void swap(int* a, int* b) {
     int t = *a;
     *a = *b;
@@ -14,11 +13,9 @@ void printAnswer(int* heap, int heapSize) {
         printf("%d ", heap[i]);
 }
 
-int* getElements(int* heap, int heapSize) {
-    heap = (int*)malloc(sizeof(int)*heapSize);
-    for(int i = 0; i < heapSize; i++)
+void getElements(int* heap, int heapSize) {
+	for (int i = 0; i < heapSize; i++)
         scanf("%d", &heap[i]);
-    return heap;
 }
 
 void siftDown(int* heap, int heapSize, int i) {
@@ -27,8 +24,8 @@ void siftDown(int* heap, int heapSize, int i) {
         left = 2*i + 1;
         right = 2*i + 2;
         j = left;
-        if (right < heapSize && heap[j] < heap[right])
-            j = right;
+        if (right < heapSize)
+            j = (heap[j] < heap[right]) ? right : j;
         if (heap[i] >= heap[j])
             break;
         swap(&heap[i], &heap[j]);
@@ -52,12 +49,14 @@ void heapSort(int* heap, int heapSize) {
 
 int main() {
     int heapSize;
-    int* heap;
-    scanf("%d", &heapSize);
-    heap = getElements(heap, heapSize);
+	int* heap;
+	scanf("%d", &heapSize);
+    heap = (int*)malloc(sizeof(int)*heapSize);
+	if (heap == NULL)
+		return 0;
+    getElements(heap, heapSize);
     heapSort(heap, heapSize);
     printAnswer(heap, heapSize);
-    free(heap);
+	free(heap);
     return 0;
 }
-
