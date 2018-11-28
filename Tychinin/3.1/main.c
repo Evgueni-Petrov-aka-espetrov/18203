@@ -19,6 +19,7 @@ int main(void)
     for (i = 0; i < n; ++i) {
         printf("%d ", nums[i]);
     }
+    free(nums);
 
     return 0;
 }
