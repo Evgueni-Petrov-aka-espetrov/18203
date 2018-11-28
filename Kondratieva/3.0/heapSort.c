@@ -49,14 +49,14 @@ void heapSort(int* heap, int heapSize) {
 
 int main() {
     int heapSize;
-	int* heap;
-	scanf("%d", &heapSize);
+    int* heap;
+    scanf("%d", &heapSize);
     heap = (int*)malloc(sizeof(int)*heapSize);
-	if (heap == NULL)
-		return 0;
+    if (heap == NULL)
+	return 0;
     getElements(heap, heapSize);
     heapSort(heap, heapSize);
     printAnswer(heap, heapSize);
-	free(heap);
+    free(heap);
     return 0;
 }
