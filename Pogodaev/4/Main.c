@@ -5,8 +5,7 @@
 
 int main() {
 	char expression[MAX_LEN];
-	Input(expression);
-	if (!Validation(expression)) {
+	if (!Input(expression)) {
 		printf("syntax error");
 		exit(0);
 	}
