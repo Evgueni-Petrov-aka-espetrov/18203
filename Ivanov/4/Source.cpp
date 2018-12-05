@@ -19,9 +19,9 @@ char cStackPop(TCStack* stack){
 	}
 }
 
-char cStackPeek(TCStack* stack){
+char cStackPeek(const TCStack* stack){
 	if (stack->elementCount != 0){
-		return stack->storage[stack->elementCount-1];
+		return stack->storage[stack->elementCount - 1];
 	}
 	else{
 		return '\0';
@@ -57,7 +57,7 @@ int iStackPop(TIStack* stack){
 	}
 }
 
-int iStackPeek(TIStack* stack){
+int iStackPeek(const TIStack* stack){
 	if (stack->elementCount != 0){
 		return stack->storage[stack->elementCount - 1];
 	}
@@ -86,6 +86,11 @@ int isNumber(char toCheck){
 	}
 }
 
+void exitWithSyntaxError(){
+	printf("syntax error");
+	exit(0);
+}
+
 void parse(char* toParse, char* result){
 	int resultIndex = 0;
 	TCStack charStack;
@@ -99,48 +104,72 @@ void parse(char* toParse, char* result){
 			result[resultIndex++] = ' ';
 		}
 		else{
-			switch (toParse[inpIndex])
-			{
-			case '+':
-			case '-':
-				for (char stackTop = cStackPeek(&charStack); stackTop != '(' && stackTop != '\0'; stackTop = cStackPeek(&charStack)){
-					result[resultIndex++] = cStackPop(&charStack);
-					result[resultIndex++] = ' ';
-				}
-				cStackPush(&charStack, toParse[inpIndex]);
-				break;
-			case '/':
-			case '*':
-				for (char stackTop = cStackPeek(&charStack); stackTop == '/' || stackTop == '*'; stackTop = cStackPeek(&charStack)){
-					result[resultIndex++] = cStackPop(&charStack);
-					result[resultIndex++] = ' ';
-				}
-				cStackPush(&charStack, toParse[inpIndex]);
-				break;
+			switch (toParse[inpIndex]){
 			case '(':
 				cStackPush(&charStack, '(');
-				break;
-			case ')':
-				for (char stackTop = cStackPeek(&charStack); stackTop != '('; stackTop = cStackPeek(&charStack)){
-					result[resultIndex++] = cStackPop(&charStack);
-					result[resultIndex++] = ' ';
-				}
-				cStackPop(&charStack);
-				break;
+				++inpIndex;
+				continue;
 			case '\0':
 				for (char stackTop = cStackPeek(&charStack); stackTop != '\0'; stackTop = cStackPeek(&charStack)){
+					if (cStackPeek(&charStack) == '('){
+						exitWithSyntaxError();
+					}
 					result[resultIndex++] = cStackPop(&charStack);
 					result[resultIndex++] = ' ';
 				}
 				result[resultIndex] = '\0';
 				return;
-				break;
 			default:
-				printf("syntax error");
-				exit(0);
+				exitWithSyntaxError();
 			}
-			++inpIndex;
 		}
+
+		getOper:
+		switch (toParse[inpIndex])
+		{
+		case '+':
+		case '-':
+			for (char stackTop = cStackPeek(&charStack); stackTop != '(' && stackTop != '\0'; stackTop = cStackPeek(&charStack)){
+				result[resultIndex++] = cStackPop(&charStack);
+				result[resultIndex++] = ' ';
+			}
+			cStackPush(&charStack, toParse[inpIndex]);
+			break;
+		case '/':
+		case '*':
+			for (char stackTop = cStackPeek(&charStack); stackTop == '/' || stackTop == '*'; stackTop = cStackPeek(&charStack)){
+				result[resultIndex++] = cStackPop(&charStack);
+				result[resultIndex++] = ' ';
+			}
+			cStackPush(&charStack, toParse[inpIndex]);
+			break;
+		case ')':
+			for (char stackTop = cStackPeek(&charStack); stackTop != '('; stackTop = cStackPeek(&charStack)){
+				if (stackTop == '\0'){
+					exitWithSyntaxError();
+				}
+				result[resultIndex++] = cStackPop(&charStack);
+				result[resultIndex++] = ' ';
+			}
+			cStackPop(&charStack);
+			++inpIndex;
+			goto getOper;
+			break;
+		case '\0':
+			for (char stackTop = cStackPeek(&charStack); stackTop != '\0'; stackTop = cStackPeek(&charStack)){
+				if (cStackPeek(&charStack) == '('){
+					exitWithSyntaxError();
+				}
+				result[resultIndex++] = cStackPop(&charStack);
+				result[resultIndex++] = ' ';
+			}
+			result[resultIndex] = '\0';
+			return;
+			break;
+		default:
+			exitWithSyntaxError();
+		}
+		++inpIndex;
 	}
 }
 
@@ -163,7 +192,7 @@ int calculate(char* parsedString){
 				iStackPush(&intStack, lvalue - rvalue);
 				break;
 			case '*':
-				iStackPush(&intStack, lvalue + rvalue);
+				iStackPush(&intStack, lvalue * rvalue);
 				break;
 			case '/':
 				if (rvalue == 0){
@@ -179,35 +208,10 @@ int calculate(char* parsedString){
 	return iStackPop(&intStack);
 }
 
-int checkInput(char* input){
-	int brCount = 0;
-	for (int index = 0; input[index] != '\0'; ++index){
-		if (input[index] == '('){
-			++brCount;
-		}
-		if (input[index] == ')'){
-			--brCount;
-			if (brCount < 0){
-				return 0;
-			}
-		}
-	}
-	if (brCount == 0){
-		return 1;
-	}
-	else{
-		return 0;
-	}
-}
-
 int main(){
 	char parsed[2000];
-	char input[1000];
-	scanf("%s", input);
-	if (!checkInput(input)){
-		printf("syntax error");
-		return 0;
-	}
+	char input[1001];
+	gets(input);
 	parse(input, parsed);
 	//printf("%s\n", parsed);
 	int result = calculate(parsed);
