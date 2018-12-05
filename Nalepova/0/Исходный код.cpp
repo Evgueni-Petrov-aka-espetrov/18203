@@ -34,6 +34,15 @@ int main() {
 	const int N = 52;
 	char number[N];
 	scanf("%s", number);
+	
+	for (int i = 0; i < strlen(number); i++)
+	{
+		if (CharToDec(number, i) >= b1)
+		{
+			printf("Bad input");
+			exit(0);
+		}
+	}
 	if (b1 == b2)
 	{
 		printf("%s", number);
