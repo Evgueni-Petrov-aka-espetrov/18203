@@ -4,6 +4,10 @@
 
 Stack *Create() {
 	Stack *temp = (Stack*)malloc(sizeof(Stack));
+	if (temp == NULL) {
+		printf("out of memory");
+		exit(0);
+	}
 	temp->position = 0;
 	return temp;
 }
