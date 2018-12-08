@@ -1,5 +1,5 @@
 #include "translate.h"
-#include "stdio.h"
+//#include "stdio.h"
 #include "string.h"
 #include "math.h"
 #include "stdbool.h"
@@ -84,7 +84,7 @@ int failSafe(int b1, int b2, char* number)//Проверка
 double numToDouble(int base, char* number)//Строку в double
 {
     double ret = 0,preRet = 0;
-    bool isDot = false;
+    int isDot = 0;
 
     for(int i = 0;number[i] != 0;++i)
     {
@@ -92,12 +92,12 @@ double numToDouble(int base, char* number)//Строку в double
 
         if(c == '.')
         {
-            isDot = true;
+            isDot = i;
             continue;
         }
 
         double a = atoi(c);
-        if(isDot)//Если целая часть
+        if(!isDot)//Если целая часть
         {
             preRet *= base;
             preRet += a;
@@ -121,7 +121,7 @@ int intToNum(char* output, int base,long long int number)//Double в строк�
         return 1;
     }
 
-    int size = 0;//Развер строки
+    int size = 0;//Размер строки
     char buffer[255];
     for(int i = 0;number != 0;i++,size++)
     {
@@ -134,13 +134,14 @@ int intToNum(char* output, int base,long long int number)//Double в строк�
     {
         output[i] = buffer[size-i-1];
     }
+    output[size] = 0;
     return size;
 }
 
 void floatToNum(char* buffer, int base,double number)
 {
     if(number == 0.0)
-        return 1;
+        return;
 
     for(int i = 0;i < 12;i++)
     {
@@ -166,7 +167,7 @@ void doubleToNum(char* output, int base,double number)
     long long int n = number;//Отдает целую часть
     int length = intToNum(&output[0],base,n);//strlen по какой-то причине возвращала слишком большое значение.
     double part = number-n;//Отдает дробную часть
-    floatToNum(&output[length+1],base,part);
+    if(part!=0.0)
         output[length] = '.';
-        output[length] = 0;
+    floatToNum(&output[length+1],base,part);
 }
