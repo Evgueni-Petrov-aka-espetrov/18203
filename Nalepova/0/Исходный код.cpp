@@ -1,7 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include<stdio.h>
 #include<string>
-
 int CharToDec(char s[], short int i)
 {
 	if (s[i] >= '0' && s[i] <= '9')
@@ -10,11 +9,24 @@ int CharToDec(char s[], short int i)
 		return s[i] - 'A' + 10;
 	else if (s[i] >= 'a' && s[i] <= 'f')
 		return s[i] - 'a' + 10;
-	else
+	else if (s[i] == '.')
+		return (int)s[i];
+	
+}
+int CheckNumber(char s[], int b1)
+{
+	int checkNumber = 1;
+	for (int i = 0; i < strlen(s); i++)
 	{
-		printf("Bad input");
-		exit(0);
+		if (CharToDec(s, i) >= b1 && s[i] != '.')
+		{
+			checkNumber = 0;
+			break;
+		}
 	}
+	if (checkNumber == 0)
+		return 0;
+	else return 1;
 }
 int CheckSystem(int b1, int b2)
 {
@@ -32,23 +44,15 @@ int main() {
 	}
 
 	const int N = 52;
-	char number[N];
+	char number[N] = {0};
 	scanf("%s", number);
 	
-	for (int i = 0; i < strlen(number); i++)
+	if (CheckNumber(number, b1) == 0)
 	{
-		if (CharToDec(number, i) >= b1)
-		{
-			printf("Bad input");
-			exit(0);
-		}
-	}
-	if (b1 == b2)
-	{
-		printf("%s", number);
+		printf("Bad input");
 		exit(0);
 	}
-
+	
 	int dot = -1;
 	for (int i = 0; i < strlen(number); i++)
 	{
@@ -111,11 +115,11 @@ int main() {
 			break;
 		}
 	}
-	
+
 	for (int i = dot - 1; i >= 0; i--)
 		printf("%c", number[i]);
 	for (int i = dot; i < strlen(number); i++)
 		printf("%c", number[i]);
-	scanf("%s", number);//
+	
 	return 0;
 }
