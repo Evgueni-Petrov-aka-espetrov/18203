@@ -51,10 +51,26 @@ int main() {
 
 	int dot = -1;
 	for (int i = 0; i < strlen(number); i++)
-	if (number[i] == '.')
-		dot = i;
+	{
+		if (number[i] == '.')
+		{
+			dot = i;
+			break;
+		}
+	}
+	if (dot == (strlen(number) - 1) || dot == 0 || number[dot + 1] == '.')
+	{
+		printf("Bad input");
+		exit(0);
+	}
 
-	int intPart = 0;
+	if (b1 == b2)
+	{
+		printf("%s", number);
+		exit(0);
+	}
+
+	long long int intPart = 0;
 	if (dot == -1)
 	{
 		dot = strlen(number);
