@@ -22,10 +22,12 @@ int main() {
 	else {
 		char symbols[MAX_LEN];
 		int amount = readfile(fin, symbols);
-		calc(symbols, amount, fout);
-		
-			
-		
+		int error = 0;
+		int result = calc(symbols, amount, &error);
+		if (error == 1) fprintf(fout, "syntax error");
+		if (error == 2) fprintf(fout, "division by zero");
+		if (error == 0) fprintf(fout, "%d", result);
+						
 	}
 	return 0;
 }

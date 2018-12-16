@@ -1,5 +1,4 @@
 #include "calc.h"
-#include <stdio.h> 
 #include <string.h> 
 #include <malloc.h>
 #include "queue.h"
@@ -38,20 +37,23 @@ int tokenize(char symbols[], int tokens[], int length) {
 	return length;
 }
 
-void calc(char symbols[], int amount, FILE* fout) {
-	if (symbolcheck(symbols, amount) > 0) fprintf(fout, "syntax error1");
+int calc(char symbols[], int amount, int *error) {
+	if (symbolcheck(symbols, amount) > 0) *error = 1; 
 	else {
 		int enter[MAX_LEN];
 		int length = tokenize(symbols, enter, amount);
-		if (positioncheck(enter, length) > 0) fprintf(fout, "syntax error2");
+		if (positioncheck(enter, length) > 0) *error = 1; 
 		else {
 			queue *polhead = NULL;
 			queue *poltail = NULL;
 			createPol(enter, &polhead, &poltail, length);
 			int dbz = 0;
 			int result = readPol(&polhead, &poltail, &dbz);
-			if (dbz == 1) fprintf(fout, "division by zero");
-			else fprintf(fout, "%d", result);
+			if (dbz == 1) {
+				*error = 2; 
+				return 0;
+			}
+			else return result;
 		}
 	}
 }
