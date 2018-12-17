@@ -24,15 +24,14 @@ void MakePerestanovka(char *perestanovka, int size)
 		index--;
 	Swap(&perestanovka[pos], &perestanovka[index]);
 
-	int w = 0;
-	for (int i = index + 1; i < size - 1; i++)
+	for (int i = 0; i < size - 1; i++)
 	{
-		for (int j = index + 1; j < size - w - 2; j++)
+		for (int j = pos + 1; j < size - i - 2; j++)
 		{
 			if (perestanovka[j] > perestanovka[j + 1])
-				Swap(&perestanovka[j], &perestanovka[j + 1]);
+				Swap(&perestanovka[j + 1], &perestanovka[j]);
 		}
-		w++;
+		
 	}
 }
 
