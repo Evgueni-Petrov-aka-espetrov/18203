@@ -1,7 +1,7 @@
-#include <malloc.h>
-#include <stdio.h>
-#include <assert.h>
 #include "stack.h"
+#include <malloc.h>
+#include <string.h>
+#include <assert.h>
 
 void push(stack **head, int value) {
 	stack *tmp = (stack*)malloc(sizeof(stack));

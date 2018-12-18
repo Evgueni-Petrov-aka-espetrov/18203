@@ -1,7 +1,8 @@
-#include <malloc.h>
-#include <stdio.h>
-#include <assert.h>
 #include "queue.h"
+#include <malloc.h>
+#include <string.h>
+#include <assert.h>
+
 int isemptyqueue(queue *head) {
 	if (head == NULL) return 0;
 	else return 1;

@@ -1,3 +1,4 @@
+#pragma once
 struct stack {
 	int data;
 	struct stack* next;

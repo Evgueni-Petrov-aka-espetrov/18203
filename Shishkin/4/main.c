@@ -1,8 +1,5 @@
-#include <stdio.h> 
-#include <string.h> 
-#include <malloc.h>
-#include <assert.h>
 #include "calc.h"
+#include <stdio.h> 
 
 int readfile(FILE *fin, char symbols[]) {
 	int i = 0;
