@@ -1,6 +1,6 @@
 #include "queue.h"
 #include <malloc.h>
-#include <string.h>
+#include <stddef.h>
 #include <assert.h>
 
 int isemptyqueue(queue *head) {

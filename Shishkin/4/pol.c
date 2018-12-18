@@ -1,7 +1,7 @@
 #include "queue.h"
 #include "stack.h"
 #include "pol.h"
-#include <stdio.h> 
+#include <stddef.h> 
 
 void createPol(int enter[], queue **polhead, queue **poltail, int amount) {
 	stack *operhead = NULL;

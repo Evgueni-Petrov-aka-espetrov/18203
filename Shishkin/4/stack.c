@@ -1,6 +1,6 @@
 #include "stack.h"
 #include <malloc.h>
-#include <string.h>
+#include <stddef.h>
 #include <assert.h>
 
 void push(stack **head, int value) {

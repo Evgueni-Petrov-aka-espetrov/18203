@@ -2,7 +2,7 @@
 #include "queue.h"
 #include "pol.h"
 #include "check.h"
-#include <string.h> 
+#include <stddef.h> 
 
 int priority(int a) {
 	int c = 0;
