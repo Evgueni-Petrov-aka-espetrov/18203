@@ -15,7 +15,7 @@ int priority(int a) {
 	return c;
 }
 
-int tokenize(char symbols[], int tokens[], int length) {
+static int tokenize(char symbols[], int tokens[], int length) {
 	int i;
 	for (i = 0; i<length; i++) {
 		tokens[i] = symbols[i] - '0';
