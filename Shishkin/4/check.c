@@ -1,4 +1,5 @@
 #include "check.h"
+#include "calc.h"
 
 int symbolcheck(char array[], int amount) {
 	int i;

@@ -55,4 +55,5 @@ int calc(char symbols[], int amount, int *error) {
 			else return result;
 		}
 	}
+	return 0;
 }

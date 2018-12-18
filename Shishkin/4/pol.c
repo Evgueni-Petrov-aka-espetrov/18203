@@ -1,6 +1,7 @@
 #include "queue.h"
 #include "stack.h"
 #include "pol.h"
+#include "calc.h"
 #include <stddef.h> 
 
 void createPol(int enter[], queue **polhead, queue **poltail, int amount) {
