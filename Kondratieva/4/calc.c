@@ -72,7 +72,7 @@ static int calc(int a, int b, char op) {
 	case '/':
 		if (!b) {
 			printf("division by zero\n");
-			assert(b);
+			exit(0);
 		}
 		return a / b;
 	}
