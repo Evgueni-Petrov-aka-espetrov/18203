@@ -1,6 +1,6 @@
 #define MAX_LEN 1001
-#include <stdio.h>
 #include "calc.h"
+#include <stdio.h>
 
 int main() {
 	char buf1[MAX_LEN] = { 0 }, buf2[2 * MAX_LEN - 1] = { 0 };

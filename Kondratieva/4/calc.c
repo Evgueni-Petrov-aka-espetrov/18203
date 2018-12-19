@@ -1,6 +1,7 @@
-﻿#include <stdio.h>
-#include "stack.h"
+﻿#include "stack.h"
 #include "calc.h"
+#include <stdio.h>
+#include <assert.h>
 
 static int isDigit(char digit) {
 	return digit <= '9' && digit >= '0';
@@ -71,11 +72,10 @@ static int calc(int a, int b, char op) {
 	case '/':
 		if (!b) {
 			printf("division by zero\n");
-			exit(0);
+			assert(b);
 		}
 		return a / b;
 	}
-
 }
 
 int calculate(const char* expr, char* buf) {

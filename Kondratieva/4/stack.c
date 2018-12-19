@@ -1,4 +1,6 @@
 #include "stack.h"
+#include <assert.h>
+#include <stdlib.h>
 
 int empty(const node* stack) {
 	return stack == NULL;
@@ -6,6 +8,7 @@ int empty(const node* stack) {
 
 void push(node** stack, int value) {
 	node* tmp = malloc(sizeof(node));
+	assert(tmp);
 	tmp->value = value;
 	tmp->next = *stack;
 	*stack = tmp;
