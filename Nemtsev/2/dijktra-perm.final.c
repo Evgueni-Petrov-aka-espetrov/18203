@@ -53,7 +53,7 @@ int permute(char string[], int length) {
 		i--;
     if (i == -1)
         return 0;
-	int j = length;
+	int j = length - 1;
 	while (j>=0 && string[j] < string[i])
 		j--;
 	swap(string, i, j);
