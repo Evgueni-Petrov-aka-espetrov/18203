@@ -1,7 +1,7 @@
-﻿#include "stack.h"
+#include "stack.h"
 #include "calc.h"
 #include <stdio.h>
-#include <assert.h>
+#include <stdlib.h>
 
 static int isDigit(char digit) {
 	return digit <= '9' && digit >= '0';
