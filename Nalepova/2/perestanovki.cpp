@@ -24,14 +24,13 @@ void MakePerestanovka(char *perestanovka, int size)
 		index--;
 	Swap(&perestanovka[pos], &perestanovka[index]);
 
-	for (int i = 0; i < size - 1; i++)
+	int l = pos + 1;
+	int r = size - 1;
+	while (l < r)
 	{
-		for (int j = pos + 1; j < size - i - 2; j++)
-		{
-			if (perestanovka[j] > perestanovka[j + 1])
-				Swap(&perestanovka[j + 1], &perestanovka[j]);
-		}
-		
+		Swap(&perestanovka[l], &perestanovka[r]);
+		l++;
+		r--;
 	}
 }
 
@@ -72,6 +71,4 @@ void main()
 		MakePerestanovka(perestanovka, sizePerestanovki);
 		printf("%s\n", perestanovka);
 	}
-	
-	scanf("%d", &amountOfPerestanovok);//
 }
