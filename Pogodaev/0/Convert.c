@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <stdio.h>
+#include "convert.h"
 
 long long int Power(long long int base, int p)
 {

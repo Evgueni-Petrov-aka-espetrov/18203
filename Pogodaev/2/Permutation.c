@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <stdlib.h>
+#include "permutation.h"
 
 void Swap(char *a, char *b) {
 	char t = *a;
