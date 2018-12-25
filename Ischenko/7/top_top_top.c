@@ -74,10 +74,6 @@ void get_edges(bool *adjacency_matrix,int number_of_edges, bads *is_there_anythi
 			*is_there_anything_bad = bad_number_of_lines;
 			return;
 		}
-		/*if (first_vertex == second_vertex) {
-			*is_there_anything_bad = impossible_to_sort;
-			return;
-		}*/
 		if (first_vertex<1 || first_vertex>number_of_vertices || second_vertex<1 || second_vertex>number_of_vertices) {
 			*is_there_anything_bad = bad_vertex;
 			return;
@@ -107,7 +103,7 @@ bads go_deeper_on_vertices(vertex_state* state_of_vertices, int number_of_vertic
 	
 	for (int i = 1; i <= number_of_vertices; i++){
 		if (adjacency_matrix[index_of_vertex*(number_of_vertices+1) + i] == true){
-			if (state_of_vertices[i] == in_process /*&& i!=index_of_vertex*/){
+			if (state_of_vertices[i] == in_process){
 				possibility_of_sorting= impossible_to_sort;
 				break;
 			}
@@ -152,7 +148,6 @@ int main() {
 			adjacency_matrix[i*number_of_vertices + u] = false;
 		}
 	}
-	
 	get_edges(adjacency_matrix, number_of_edges, &is_there_anything_bad, number_of_vertices,fin);
 	check_bads(is_there_anything_bad,fout);
 
@@ -162,7 +157,6 @@ int main() {
 	 }
 	is_there_anything_bad= top_sort(state_of_vertices, number_of_vertices, adjacency_matrix, topological_position);
 	check_bads(is_there_anything_bad,fout);
-
 	int *right_topological_position = (int*)malloc((number_of_vertices + 1) * sizeof(int));
 	recover_topological_position(topological_position, number_of_vertices, right_topological_position);
 	for (int i = 1; i < number_of_vertices + 1; i++) {
