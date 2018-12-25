@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <malloc.h>
 
 void swap(int *array, int l, int r) {
 	int temp = array[l];
