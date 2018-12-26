@@ -1,4 +1,6 @@
-#include <iostream>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 int getstr(int shift, unsigned char* str);
 void makeShift(int shift, unsigned char* str);
 int search(int* shiftTable,unsigned char* pat, unsigned char* str, int* count);
@@ -28,8 +30,8 @@ void buildShiftTable(unsigned char* pat, int* shiftTable)
 
 void BM(int* shiftTable, unsigned char* pat, unsigned char* str)
 {   int y = 1;
-	int  shift(0);
-	int count(0);
+	int  shift = 0;
+	int count = 0;
 	while (y)
 	{   y = getstr(shift, str);
 	    shift = search(shiftTable, pat, str, &count);
