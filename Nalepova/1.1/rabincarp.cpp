@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <string.h>
 
-
 int Hash(unsigned char c, int lastStep)
 {
 	static int degree = 1;
@@ -31,12 +30,12 @@ int Check(unsigned char* word, unsigned char* string, const int lengthWord, int 
 	{
 		if (word[i] == string[i])
 		{
-			printf("%d ", fromPosition + i);
+			printf("%d ", fromPosition + i + 1);
 		}
 		else
 		{
 
-			printf("%d ", fromPosition + i);
+			printf("%d ", fromPosition + i + 1);
 
 			return 0;
 		}
@@ -61,17 +60,21 @@ int main()
 	
 	unsigned char pattern[maxlengthPattern + 1];
 	unsigned char string[maxlengthPattern + 1];
-	scanf("%s", pattern);
+	char ch;
 	int d = 0;
-	while (pattern[d] != '\0')
-	{
+	do {
+		ch = getchar();
+
+		pattern[d] = ch;
 		d++;
-	}
+	} while (ch != '\n');
+	d--;
+	pattern[d] = '\0';
 	int lengthPattern = d;
 
 	int hashOfWord = wordHash(pattern, lengthPattern);
 
-	char ch;
+	
 	for (int j = 0; j < lengthPattern; j++)
 	{
 		ch = getchar();
