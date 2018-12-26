@@ -16,7 +16,7 @@ int Hash(char c, int lastStep)
 	return res;
 }
 
-int wordHash(char* word, int lengthWord)
+int wordHash(unsigned char* word, int lengthWord)
 {
 	int sum = 0;
 	for (int i = 0; i < lengthWord; i++) {
@@ -25,7 +25,7 @@ int wordHash(char* word, int lengthWord)
 	return sum;
 }
 
-int Check(char* word, char* string, const int lengthWord, int fromPosition)
+int Check(unsigned char* word, unsigned char* string, const int lengthWord, int fromPosition)
 {
 
 	for (int i = 0; i < lengthWord; ++i)
@@ -60,8 +60,8 @@ int main()
 
 	const int maxlengthPattern = 16;
 	
-	char pattern[maxlengthPattern + 1];
-	char string[maxlengthPattern + 1];
+	unsigned char pattern[maxlengthPattern + 1];
+	unsigned char string[maxlengthPattern + 1];
 	scanf("%s", pattern);
 
 	int lengthPattern = strlen(pattern);
