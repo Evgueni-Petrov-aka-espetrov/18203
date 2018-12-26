@@ -3,7 +3,7 @@
 #include <string.h>
 
 
-int Hash(char c, int lastStep)
+int Hash(unsigned char c, int lastStep)
 {
 	static int degree = 1;
 	int res = (c % 3) * degree;
