@@ -24,7 +24,6 @@ int main()
 	fclose(fin);
 	fclose(fout);
 	return 0;
-
 }
 
 int pow3(int n)
@@ -50,7 +49,7 @@ void printarr (int start, int length, FILE *fout)
 
 int startread(unsigned char hay[], int needlelength, FILE *fin)
 {
-	int i, position(0), check(0);
+	int i, position = 0, check = 0;
 	char symbol;
 	for (i = 0; i < needlelength; i++)
 	{
@@ -75,7 +74,7 @@ int startread(unsigned char hay[], int needlelength, FILE *fin)
 int nextread(unsigned char hay[], int needlelength, FILE *fin)
 {
 	char symbol;
-	int i, check(0);
+	int i, check = 0;
 	for (i = 1; i < needlelength; i++)
 	{
 		hay[i - 1] = hay[i];
@@ -93,7 +92,7 @@ int nextread(unsigned char hay[], int needlelength, FILE *fin)
 
 int counthash(unsigned char array[], int needlelength)
 {
-	int i, result(0);
+	int i, result = 0;
 	for (i = 0; i <= needlelength - 1; i++)
 	{
 		result = result + ((array[i] % 3) * pow3(i));
@@ -116,7 +115,7 @@ void compare(unsigned char needle[], unsigned char hay[], int start, int needlel
 }
 void RK(unsigned char needle[], unsigned char hay[], int needlelength, FILE *fin, FILE *fout)
 {
-	int start(0);
+	int start = 0;
 	int hash = counthash(needle, needlelength);
 	float phash;
 	fprintf(fout, "%d ", hash);
