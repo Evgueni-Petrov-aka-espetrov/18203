@@ -83,20 +83,6 @@ void get_edges(bool *adjacency_matrix,int number_of_edges, bads *is_there_anythi
 
 }
 
-bads top_sort(vertex_state* state_of_vertices,int number_of_vertices,bool *adjacency_matrix, int *topological_position){
-	bads possibility_of_sorting = not_bad;
-	int top_level = 1;
-	for (int i = 1; i <= number_of_vertices; i++){
-		if (state_of_vertices[i] == not_processed){
-			possibility_of_sorting = go_deeper_on_vertices(state_of_vertices, number_of_vertices, adjacency_matrix, topological_position,  &top_level,i);
-			if (possibility_of_sorting != not_bad) {
-				break;
-			}
-		}
-	}
-	return possibility_of_sorting;
-}
-
 bads go_deeper_on_vertices(vertex_state* state_of_vertices, int number_of_vertices, const bool  *adjacency_matrix, int *topological_position, int *top_level, int index_of_vertex){
 	bads possibility_of_sorting=not_bad;
 	state_of_vertices[index_of_vertex] = in_process;
@@ -115,6 +101,20 @@ bads go_deeper_on_vertices(vertex_state* state_of_vertices, int number_of_vertic
 	topological_position[index_of_vertex] = *top_level;
 	*top_level = *top_level + 1;
 	state_of_vertices[index_of_vertex] = processed;
+	return possibility_of_sorting;
+}
+
+bads top_sort(vertex_state* state_of_vertices,int number_of_vertices,bool *adjacency_matrix, int *topological_position){
+	bads possibility_of_sorting = not_bad;
+	int top_level = 1;
+	for (int i = 1; i <= number_of_vertices; i++){
+		if (state_of_vertices[i] == not_processed){
+			possibility_of_sorting = go_deeper_on_vertices(state_of_vertices, number_of_vertices, adjacency_matrix, topological_position,  &top_level,i);
+			if (possibility_of_sorting != not_bad) {
+				break;
+			}
+		}
+	}
 	return possibility_of_sorting;
 }
 
