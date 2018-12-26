@@ -32,7 +32,7 @@ int Check(char* word, char* string, const int lengthWord, int fromPosition)
 	{
 		if (word[i] == string[i])
 		{
-			printf("%d ", fromPosition + i + 1);
+			printf("%d ", fromPosition + i);
 		}
 		else
 		{
