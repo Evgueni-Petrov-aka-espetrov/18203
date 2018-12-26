@@ -37,7 +37,7 @@ int Check(char* word, char* string, const int lengthWord, int fromPosition)
 		else
 		{
 
-			printf("%d ", fromPosition + i + 1);
+			printf("%d ", fromPosition + i);
 
 			return 0;
 		}
