@@ -35,7 +35,7 @@ int searchformax(int array[], int num, int *maxchar) {
 	array[*maxchar] = 0;
 	return max;
 }
-void push(textline **head, int num, char letter) {
+textline *push(textline *head, int num, char letter) {
 	textline *tmp = (textline*)malloc(sizeof(textline));
 	tree *tr = (tree*)malloc(sizeof(tree));
 	assert(tmp != NULL);
@@ -45,9 +45,10 @@ void push(textline **head, int num, char letter) {
 	tr->symbol = letter;
 	tr->usage = num;
 	tmp->root = tr;
-	tmp->next = *head;
-	*head = tmp;
-	free(tr);
+	tmp->next = head;
+	//free(tr);
+	printf("%d %c", tmp->root->usage, tmp->root->symbol);
+	return tmp;
 }
 //char pop(textline **head) {
 //	assert(*head != NULL);
@@ -148,11 +149,11 @@ void zip(FILE *fin, FILE *fout) {
 	printf("%d %c   ", max, maxchar);
 	while (max > 0) {
 		char ch = maxchar;
-		push(&text, max, ch);
+		text = push(text, max, ch);
 		printf("%d %c   ", max, maxchar);
 		max = searchformax(alph, 256, &maxchar);
 	}
-	printf("%c %c", text->next->root->symbol, text->root->symbol);
+	printf("%c 123 %c", text->next->root->symbol, text->next->next->root->symbol);
 	//tree generate
 	treecreate(text);
 	printf("hfj");
