@@ -1,4 +1,4 @@
-#include <stdio.h>
+﻿#include <stdio.h>
 #include <malloc.h>
 #include <io.h>
 #include <assert.h>
@@ -171,7 +171,7 @@ void textencode(FILE *in, FILE *out, tree *root) {
 			buf = buf + (array[i]);
 			buf_sym++;
 			if (buf_sym > 7) {
-				printf("%d ", buf);
+				//printf("%d ", buf);
 				fprintf(out, "%c", buf);
 				buf = buf << 8;
 				buf_sym = 0;
@@ -181,7 +181,7 @@ void textencode(FILE *in, FILE *out, tree *root) {
 		}
 	}
 	buf = buf << (7 - buf_sym);
-	printf("%d ", buf);
+	//printf("%d ", buf);
 	fprintf(out, "%c", buf);
 }
 void zip(FILE *fin, FILE *fout) {
@@ -190,60 +190,68 @@ void zip(FILE *fin, FILE *fout) {
 	int alph[256] = { 0 };
 	//int amountofsymbols = 0;
 	//reading to array
-	while ((c = fgetc(fin)) != EOF) {
-		alph[c]++;
-		//amountofsymbols++;
-		//printf("%c & %d & %d    ", c, c, alph[c]);
-	}
-	//printf("%d ", alph[97]);
-	//organizing stack from array
-	int max;
-	int maxchar = 0;
-	max = searchformax(alph, 256, &maxchar);
-	//printf("%d %c   ", max, maxchar);
-	while (max > 0) {
-		char ch = maxchar;
-		text = push(text, max, ch);
-		//printf("%d %c   ", max, maxchar);
+	c = fgetc(fin);
+	if (c != EOF){
+		fprintf(stderr, " 0 ");
+		fseek(fin, 0L, SEEK_SET);
+		c = fgetc(fin);
+		c = fgetc(fin);
+		while ((c = fgetc(fin)) != EOF) {
+			alph[c]++;
+			//amountofsymbols++;
+			//printf("%c & %d & %d    ", c, c, alph[c]);
+		}
+		//printf("%d ", alph[97]);
+		//organizing stack from array
+		int max;
+		int maxchar = 0;
 		max = searchformax(alph, 256, &maxchar);
+		//printf("%d %c   ", max, maxchar);
+		while (max > 0) {
+			char ch = maxchar;
+			text = push(text, max, ch);
+			//printf("%d %c   ", max, maxchar);
+			max = searchformax(alph, 256, &maxchar);
+		}
+		//printf("'%c' 123 '%c'", text->root->symbol, text->next->root->symbol);
+		//tree generate
+		tree *treePtr = treecreate(text);
+		//printf(" %d ");
+		//tree encoding
+		//fprintf(fout, "%d ", treePtr->usage);
+		keyencode(treePtr, fout);
+		//printf("tree code is ready");
+		fprintf(fout, "\n");
+		//text encoding
+		fseek(fin, 0L, SEEK_SET);   /* move to start of fin */
+		//char h = fgetc(fin);
+		//printf("%d and '%c'  ", treePtr->right->right->left->usage, treePtr->right->right->left->symbol);
+		textencode(fin, fout, treePtr);
 	}
-	//printf("'%c' 123 '%c'", text->root->symbol, text->next->root->symbol);
-	//tree generate
-	tree *treePtr = treecreate(text);
-	//printf(" %d ");
-	//tree encoding
-	//fprintf(fout, "%d ", treePtr->usage);
-	keyencode(treePtr, fout);
-	//printf("tree code is ready");
-	fprintf(fout, "\n");
-	//text encoding
-	fseek(fin, 0L, SEEK_SET);   /* move to start of fin */
-	//char h = fgetc(fin);
-	//printf("%d and '%c'  ", treePtr->right->right->left->usage, treePtr->right->right->left->symbol);
-	textencode(fin, fout, treePtr);
+	else fprintf(stderr, " 1 ");
 }
 void keydecode(FILE *in, tree *root) {
 	unsigned char c = fgetc(in);
 	//printf(" %c ", c);
 	//if (c == '\n') return c;
 	//else {
-		if (c == '1') {
-			tree *tmpl = (tree*)malloc(sizeof(tree));
-			tree *tmpr = (tree*)malloc(sizeof(tree));
-			assert(tmpl != NULL);
-			assert(tmpr != NULL);
-			root->left = tmpl;
-			root->right = tmpr;
-			keydecode(in, root->left);
-			keydecode(in, root->right);
-		}
-		if (c == '0') {
-			c = fgetc(in);
-			root->symbol = c;
-			//printf(" '%c' ", c);
-			root->left = NULL;
-			root->right = NULL;
-		}
+	if (c == '1') {
+		tree *tmpl = (tree*)malloc(sizeof(tree));
+		tree *tmpr = (tree*)malloc(sizeof(tree));
+		assert(tmpl != NULL);
+		assert(tmpr != NULL);
+		root->left = tmpl;
+		root->right = tmpr;
+		keydecode(in, root->left);
+		keydecode(in, root->right);
+	}
+	if (c == '0') {
+		c = fgetc(in);
+		root->symbol = c;
+		//printf(" '%c' ", c);
+		root->left = NULL;
+		root->right = NULL;
+	}
 	//}
 	//return c;
 }
@@ -259,7 +267,7 @@ void textdecode(tree *root, FILE *out, FILE *in) {
 		c = fgetc(in);
 	}
 	//printf("%d", lengthoftext);
-	c = fgetc(in);   
+	c = fgetc(in);
 	int i = 0;
 	int counter = 7;
 	//printf("%d", c);
@@ -287,16 +295,26 @@ void textdecode(tree *root, FILE *out, FILE *in) {
 void unzip(FILE *in, FILE *out) {
 	tree *root = (tree*)malloc(sizeof(tree));
 	assert(root != NULL);
-	keydecode(in, root);
-	//printf("'%c'", root->left->right->symbol);
-	textdecode(root, out, in);
+	char c = fgetc(in);
+	if (c != EOF) {
+		fprintf(stderr, " 0 ");
+		fseek(in, 0L, SEEK_SET);
+		c = fgetc(in);
+		c = fgetc(in);
+		keydecode(in, root);
+		//printf("'%c'", root->left->right->symbol);
+		textdecode(root, out, in);
+	}
+	else fprintf(stderr, " 1 ");
 }
 int main() {
 	FILE *fout = fopen("out.txt", "w");
 	FILE *fin = fopen("in.txt", "r+");
+	//fprintf(stderr, " 2 ");
 	if (fin == NULL)
 		fprintf(fout, "File could not be opened.");
 	else {
+		fprintf(stderr, " 1 \n");
 		char res = wtd(fin);
 		if (res == 'c') zip(fin, fout);
 		if (res == 'd') unzip(fin, fout);
