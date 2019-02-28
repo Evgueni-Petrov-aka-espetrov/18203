@@ -21,6 +21,7 @@ typedef struct stack {
 char wtd(FILE *fin) {
 	char b = fgetc(fin);
 	char c = fgetc(fin);
+	c = fgetc(fin);
 	return b;
 }
 int searchformax(int array[], int num, int *maxchar) {
@@ -87,7 +88,7 @@ tree *treecreate(textline *text) {
 		textline *text1 = (textline*)malloc(sizeof(textline));
 		assert(tmp != NULL);
 		assert(text1 != NULL);
-		//printf(" %c ", text->root->symbol);
+		//printf(" '%c' ", text->root->symbol);
 		if ((text)->root->usage >= ((text)->next)->root->usage) {
 			tmp->left = (text)->root;
 			tmp->right = (text)->next->root;
@@ -144,26 +145,69 @@ int findsymbol(tree *root, char sym, int *counter, int array[]) {
 	if ((l_res == 0) || (r_res == 0)) return 0;
 	else return 1;
 }
-void keyencode(tree *root, FILE *out) {
+void keyencode(tree *root, FILE *out, unsigned char *ch, int *counter) {
+	if (*counter > 7){
+		//printf(" %d ", *ch);
+		fprintf(out, "%c", *ch);
+		//printf("   ");
+		*ch = 0;
+		*counter = 0;
+		
+	}
 	if ((root->left != NULL) || (root->right != NULL)) {
-		fprintf(out, "1");
-		keyencode(root->left, out);
-		keyencode(root->right, out);
+		
+		*ch = *ch << 1;
+		*ch = *ch + 1;
+		//printf("1");
+		*counter = *counter + 1;
+		//printf(" %d and %d ---> ", *ch, *counter);
+		keyencode(root->left, out, ch, counter);
+		keyencode(root->right, out, ch, counter);
 	}
 	else {
-		fprintf(out, "0%c", root->symbol);
+		
+		*ch = *ch << 1;
+		//printf("0");
+		*counter = *counter + 1;
+		//printf(" %d and %d ---> ", *ch, *counter);
+		int i;
+		//printf(" '%c' ", root->symbol);
+		for (i = 7; i >= 0; i--){
+			
+			int byte = (root->symbol >> i) & 1;
+			if (*counter > 7){
+				//printf(" %d ", *ch);
+				fprintf(out, "%c", *ch);
+				//printf("   ");
+				*ch = 0;
+				*counter = 0;
+			}
+			
+			//printf("%d", byte);
+			*ch = *ch << 1;
+			*ch = *ch + byte;
+			*counter = *counter + 1;
+			//printf(" %d and %d ---> ", *ch, *counter);
+		}
 	}
 }
 void textencode(FILE *in, FILE *out, tree *root) {
 	char c = fgetc(in);
+	//fprintf(stderr, " '%d' ", c);
 	c = fgetc(in);
+	c = fgetc(in);
+	//fprintf(stderr, " '%d' ", c);
 	fprintf(out, "%d ", root->usage);
 	unsigned char buf = 0;
 	int buf_sym = 0;
-	while ((c = fgetc(in)) != EOF) {
+	c = fgetc(in);
+	//fprintf(stderr, " '%d' ", c);
+	while (c != EOF) {
+		
 		//printf("'%c'  ", c);
 		int array[256] = { 0 };
 		int counter = 0;
+		//unsigned char ch = c;
 		int res = findsymbol(root, c, &counter, array);
 		int i;
 		for (i = counter - 1; i >= 0; i--) {
@@ -179,28 +223,36 @@ void textencode(FILE *in, FILE *out, tree *root) {
 			else buf = buf << 1;
 
 		}
+		c = fgetc(in);
+		//fprintf(stderr, " '%d' ", c);
 	}
 	buf = buf << (7 - buf_sym);
 	//printf("%d ", buf);
 	fprintf(out, "%c", buf);
 }
 void zip(FILE *fin, FILE *fout) {
-	char c;
+	int c;
 	textline *text = NULL;
 	int alph[256] = { 0 };
 	//int amountofsymbols = 0;
 	//reading to array
 	c = fgetc(fin);
 	if (c != EOF){
-		fprintf(stderr, " 0 ");
+		//fprintf(res, " 0 \n");
 		fseek(fin, 0L, SEEK_SET);
 		c = fgetc(fin);
+		//fprintf(stderr, "'%d'", c);
 		c = fgetc(fin);
+		c = fgetc(fin);
+		//fprintf(stderr, "'%d'", c);
 		while ((c = fgetc(fin)) != EOF) {
+			//fprintf(stderr, "'%d'", c);
 			alph[c]++;
 			//amountofsymbols++;
 			//printf("%c & %d & %d    ", c, c, alph[c]);
 		}
+		//fprintf(stderr, "'%d'", c);
+		//fprintf(stderr, "\n");
 		//printf("%d ", alph[97]);
 		//organizing stack from array
 		int max;
@@ -219,44 +271,84 @@ void zip(FILE *fin, FILE *fout) {
 		//printf(" %d ");
 		//tree encoding
 		//fprintf(fout, "%d ", treePtr->usage);
-		keyencode(treePtr, fout);
-		//printf("tree code is ready");
-		fprintf(fout, "\n");
+		unsigned char ch = 0;
+		int counter = 0;
+		//printf(" '%c' ", treePtr->left->right->symbol);
+		keyencode(treePtr, fout, &ch, &counter);
+		ch = (ch << (8 - counter));
+		//printf(" %d ", ch);
+		fprintf(fout, "%c", ch);
+		//printf(" '%d' ", treePtr->right->usage);
+		fprintf(fout, "\r\n");
 		//text encoding
 		fseek(fin, 0L, SEEK_SET);   /* move to start of fin */
 		//char h = fgetc(fin);
 		//printf("%d and '%c'  ", treePtr->right->right->left->usage, treePtr->right->right->left->symbol);
+		//printf("1");
 		textencode(fin, fout, treePtr);
+		//printf("text cade is ready");
 	}
-	else fprintf(stderr, " 1 ");
+	//else fprintf(res, " 1 \n");
 }
-void keydecode(FILE *in, tree *root) {
-	unsigned char c = fgetc(in);
+void keydecode(FILE *in, tree *root, unsigned char *ch, int *counter) {
+	//unsigned char c = fgetc(in);
 	//printf(" %c ", c);
 	//if (c == '\n') return c;
 	//else {
-	if (c == '1') {
+	//printf(" '%d' ", *ch);
+	if (*counter < 0) {
+		*ch = fgetc(in);
+		*counter = 7;
+//		printf("     ");
+	}
+	if (((*ch >> *counter) & 1) == 0) {
+//		printf(" 0 ");
+		*counter = *counter - 1;
+		int i;
+		unsigned char sym = 0;
+		for (i = 0; i < 8; i++) {
+			if (*counter < 0) {
+				*ch = fgetc(in);
+				*counter = 7;
+//				printf("     ");
+			}
+			int byte = ((*ch >> *counter) & 1);
+//			printf("'%d'", byte);
+			sym = sym << 1;
+			sym = sym + byte;
+
+			*counter = *counter - 1;
+		}
+		root->symbol = sym;
+//		printf(" '%d' ", sym);
+		root->left = NULL;
+		root->right = NULL;
+	}
+	//if (((*ch >> *counter) & 1) == 1) {
+	else {
+//		printf(" 1 ");
+		*counter = *counter - 1;
 		tree *tmpl = (tree*)malloc(sizeof(tree));
 		tree *tmpr = (tree*)malloc(sizeof(tree));
 		assert(tmpl != NULL);
 		assert(tmpr != NULL);
+		
+		
 		root->left = tmpl;
+		
 		root->right = tmpr;
-		keydecode(in, root->left);
-		keydecode(in, root->right);
+//		printf(" L ");
+		keydecode(in, root->left, ch, counter);
+//		printf(" R ");
+		keydecode(in, root->right, ch, counter);
 	}
-	if (c == '0') {
-		c = fgetc(in);
-		root->symbol = c;
-		//printf(" '%c' ", c);
-		root->left = NULL;
-		root->right = NULL;
-	}
+
 	//}
 	//return c;
 }
 void textdecode(tree *root, FILE *out, FILE *in) {
 	unsigned char c = fgetc(in);
+	c = fgetc(in);
 	c = fgetc(in);
 	//printf("'%c' ", c);
 	int lengthoftext = 0;
@@ -280,44 +372,71 @@ void textdecode(tree *root, FILE *out, FILE *in) {
 				counter = 7;
 
 				c = fgetc(in);
-				printf("%d", c);
+				//printf("%d", c);
 			}
 			int byte = (c >> counter) & 1;
-			printf(" %d --> ", byte);
+			//printf(" %d --> ", byte);
 			counter--;
 			if (byte == 0) tmp = tmp->left;
 			if (byte == 1) tmp = tmp->right;
 		}
-		printf("'%c'", tmp->symbol);
+		//fprintf(stderr, " '%d' ", tmp->symbol);
+		//fprintf(stderr, "fghj");
 		fprintf(out, "%c", tmp->symbol);
 	}
 }
 void unzip(FILE *in, FILE *out) {
 	tree *root = (tree*)malloc(sizeof(tree));
 	assert(root != NULL);
-	char c = fgetc(in);
+	int c = fgetc(in);
 	if (c != EOF) {
-		fprintf(stderr, " 0 ");
+		//fprintf(stderr, " 0 ");
 		fseek(in, 0L, SEEK_SET);
 		c = fgetc(in);
 		c = fgetc(in);
-		keydecode(in, root);
-		//printf("'%c'", root->left->right->symbol);
+		c = fgetc(in);
+		int counter = 7;
+		unsigned char ch = fgetc(in);
+		//printf("123");
+		keydecode(in, root, &ch, &counter);
+		//printf("11313435");
+		//printf("'%с' \n", root->right->symbol);
 		textdecode(root, out, in);
+		fprintf(stderr, "\n");
 	}
-	else fprintf(stderr, " 1 ");
+	//else fprintf(res, " 1 \n");
 }
 int main() {
-	FILE *fout = fopen("out.txt", "w");
-	FILE *fin = fopen("in.txt", "r+");
-	//fprintf(stderr, " 2 ");
+	//FILE *fout0 = fopen("in.txt", "w");
+	//fprintf(fout0, "c\n\n\r\n\r");
+	//fclose(fout0);
+
+	FILE *fout = fopen("out.txt", "wb");
+	FILE *fin = fopen("in.txt", "rb");
 	if (fin == NULL)
-		fprintf(fout, "File could not be opened.");
+		fprintf(fout, " File could not be opened. \n");
 	else {
-		fprintf(stderr, " 1 \n");
+		//		fprintf(result, " 1 \n");
+		//fprintf(fout, "c\n\n\r\n\r");
 		char res = wtd(fin);
+		//(fout, "d\n");
 		if (res == 'c') zip(fin, fout);
 		if (res == 'd') unzip(fin, fout);
+		//zip(fin, fout);
 	}
+	fclose(fin);
+	fclose(fout);
+
+	//FILE *fout2 = fopen("out2.txt", "w");
+	//FILE *fin2 = fopen("out.txt", "r");
+	//if (fin2 == NULL)
+	//	fprintf(fout2, " File could not be opened. \n");
+	//else {
+	//	 //printf("\n\n\n");
+	//	 char res = wtd(fin2);
+	//	 unzip(fin2, fout2);
+	//}
+	//fclose(fin2);
+	//fclose(fout2);
 	return 0;
 }
