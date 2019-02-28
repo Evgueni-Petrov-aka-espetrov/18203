@@ -191,13 +191,34 @@ void keyencode(tree *root, FILE *out, unsigned char *ch, int *counter) {
 		}
 	}
 }
+void printnum(int num, FILE *out){
+	unsigned char c = 0;
+	int i = 0;
+	do {
+		int d = num % 2;
+		num = (num - d) / 2;
+		c = c + d;
+		i++;
+		if (i > 7){
+			fprintf(out, "%c", c);
+			c = 0;
+			i = 0;
+		}
+		else c = c << 1;
+	} while (num > 0);
+	c = c << (7 - i);
+	fprintf(out, "%c", c);
+	fprintf(stderr, "%d", c);
+}
 void textencode(FILE *in, FILE *out, tree *root) {
 	char c = fgetc(in);
 	//fprintf(stderr, " '%d' ", c);
 	c = fgetc(in);
 	c = fgetc(in);
 	//fprintf(stderr, " '%d' ", c);
-	fprintf(out, "%d ", root->usage);
+	fprintf(stderr, "%d ", root->usage);
+	printnum(root->usage, out);
+	fprintf(out, " ");
 	unsigned char buf = 0;
 	int buf_sym = 0;
 	int i;
@@ -349,21 +370,53 @@ void keydecode(FILE *in, tree *root, unsigned char *ch, int *counter) {
 	//}
 	//return c;
 }
+int pow2(int deg){
+	int res = 1;
+	int i;
+	for (i = 1; i <= deg; i++){
+		res = res * 2;
+	}
+	return res;
+}
+int scannum(FILE *in){
+	unsigned char ch = 0;
+	int res = 0;
+	int pow = 1;
+	ch = fgetc(in);
+	int i;
+	for (i = 0; i <= 7; i++){
+		res = res + ((ch >> (7 - i)) & 1)*pow;
+		fprintf(stderr, "%d  ", res);
+		pow = pow * 2;
+	}
+	ch = fgetc(in);
+	while (ch != ' ') {
+		i;
+		for (i = 0; i <= 7; i++){
+			res = res + ((ch >> (7 - i)) & 1)*pow;
+			fprintf(stderr, "%d  ", res);
+			pow = pow * 2;
+		}
+		ch = fgetc(in);
+	} 
+	return res;
+}
 void textdecode(tree *root, FILE *out, FILE *in) {
 	unsigned char c = fgetc(in);
 	//printf("'%d' ", c);
 	c = fgetc(in);
 	//printf("'%d' ", c);
-	c = fgetc(in);
+	//c = fgetc(in);
 	//printf("'%d' ", c);
-	int lengthoftext = 0;
-	while (c != ' ') {
-		//printf("'%c' ", c);
-		int r = c - 48;
-		lengthoftext = (lengthoftext * 10) + r;
-		c = fgetc(in);
-	}
-	//fprintf(stderr, "  %d   ", lengthoftext);
+	int lengthoftext = scannum(in);
+	//while (c != ' ') {
+	//	//printf("'%c' ", c);
+	//	int r = c - 48;
+	//	lengthoftext = (lengthoftext * 10) + r;
+	//	c = fgetc(in);
+	//}
+	fprintf(stderr, "  %d   ", lengthoftext);
+
 	c = fgetc(in);
 	int i = 0;
 	int counter = 7;
