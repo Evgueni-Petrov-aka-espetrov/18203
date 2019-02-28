@@ -200,10 +200,13 @@ void textencode(FILE *in, FILE *out, tree *root) {
 	fprintf(out, "%d ", root->usage);
 	unsigned char buf = 0;
 	int buf_sym = 0;
-	c = fgetc(in);
+	int i;
+	//c = fgetc(in);
 	//fprintf(stderr, " '%d' ", c);
-	while (c != EOF) {
-		
+	//while (c != EOF) {
+	for (i = 0; i < root->usage; i++){
+		c = fgetc(in);
+		//fprintf(stderr, " '%d' ", c);
 		//printf("'%c'  ", c);
 		int array[256] = { 0 };
 		int counter = 0;
@@ -223,7 +226,7 @@ void textencode(FILE *in, FILE *out, tree *root) {
 			else buf = buf << 1;
 
 		}
-		c = fgetc(in);
+		//c = fgetc(in);
 		//fprintf(stderr, " '%d' ", c);
 	}
 	buf = buf << (7 - buf_sym);
@@ -348,9 +351,11 @@ void keydecode(FILE *in, tree *root, unsigned char *ch, int *counter) {
 }
 void textdecode(tree *root, FILE *out, FILE *in) {
 	unsigned char c = fgetc(in);
+	//printf("'%d' ", c);
 	c = fgetc(in);
+	//printf("'%d' ", c);
 	c = fgetc(in);
-	//printf("'%c' ", c);
+	//printf("'%d' ", c);
 	int lengthoftext = 0;
 	while (c != ' ') {
 		//printf("'%c' ", c);
@@ -358,7 +363,7 @@ void textdecode(tree *root, FILE *out, FILE *in) {
 		lengthoftext = (lengthoftext * 10) + r;
 		c = fgetc(in);
 	}
-	//printf("%d", lengthoftext);
+	//fprintf(stderr, "  %d   ", lengthoftext);
 	c = fgetc(in);
 	int i = 0;
 	int counter = 7;
@@ -407,8 +412,14 @@ void unzip(FILE *in, FILE *out) {
 	//else fprintf(res, " 1 \n");
 }
 int main() {
-	//FILE *fout0 = fopen("in.txt", "w");
-	//fprintf(fout0, "c\n\n\r\n\r");
+	//FILE *fout0 = fopen("in.txt", "wb");
+	//fprintf(fout0, "c\r\n");
+	//int i, j;
+	//for (i = 0; i < 256; i++) {
+	//	for (j = 0; j < 256; j++) {
+	//		fprintf(fout0, "%c", j);
+	//	}
+	//}
 	//fclose(fout0);
 
 	FILE *fout = fopen("out.txt", "wb");
@@ -419,7 +430,7 @@ int main() {
 		//		fprintf(result, " 1 \n");
 		//fprintf(fout, "c\n\n\r\n\r");
 		char res = wtd(fin);
-		//(fout, "d\n");
+		//fprintf(fout, "d\r\n");
 		if (res == 'c') zip(fin, fout);
 		if (res == 'd') unzip(fin, fout);
 		//zip(fin, fout);
@@ -427,12 +438,12 @@ int main() {
 	fclose(fin);
 	fclose(fout);
 
-	//FILE *fout2 = fopen("out2.txt", "w");
-	//FILE *fin2 = fopen("out.txt", "r");
+	//FILE *fout2 = fopen("out2.txt", "wb");
+	//FILE *fin2 = fopen("out.txt", "rb");
 	//if (fin2 == NULL)
-	//	fprintf(fout2, " File could not be opened. \n");
+	//	fprintf(fout2, " File could not be opened. \r\n");
 	//else {
-	//	 //printf("\n\n\n");
+	//	 printf("\n\n\n\n\n\n\n");
 	//	 char res = wtd(fin2);
 	//	 unzip(fin2, fout2);
 	//}
