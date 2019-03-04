@@ -13,6 +13,39 @@ struct TTreeNodePtrListNode {
 	TTreeNodePtrListNode* next;
 };
 
+struct TTreeNodeQueue {
+	TTreeNodePtrListNode* head;
+	TTreeNodePtrListNode* tail;
+};
+
+void pushTreeNodeToQueue(TTreeNode* toPush, TTreeNodeQueue* queue){
+	TTreeNodePtrListNode* newNode = (TTreeNodePtrListNode*)malloc(sizeof(TTreeNodePtrListNode));
+	newNode->next = NULL;
+	if (queue->head == NULL){
+		queue->head = newNode;
+		queue->tail = newNode;
+	}
+	else{
+		queue->tail->next = newNode;
+		queue->tail = newNode;
+	}
+	newNode->TTreeNodePtr = toPush;
+}
+
+TTreeNode* popTreeNodeFromQueue(TTreeNodeQueue* queue){
+	if (queue->head == NULL){
+		return NULL;
+	}
+	TTreeNodePtrListNode* oldNode = queue->head;
+	TTreeNode* toReturn = oldNode->TTreeNodePtr;
+	if (queue->head->next == NULL){
+
+	}
+	queue->head = queue->head->next;
+	free(oldNode);
+	return toReturn;
+}
+
 TTreeNodePtrListNode* getTreeNodeListPtrFromStat(int charStat[256]) {
 	TTreeNodePtrListNode* firstListNodePtr = NULL;
 	for (int i = 0; i <= 255; ++i) {
@@ -79,7 +112,7 @@ TTreeNode* getTreeRootPtr(int charStat[256]) {
 }
 
 struct TBitArray {
-	char* storage;
+	unsigned char* storage;
 	int bitCount;
 };
 
@@ -91,7 +124,7 @@ TBitArray* cloneBitArray(const TBitArray* original) {
 		return newBitArray;
 	}
 	int byteCount = ((original->bitCount - 1) / 8) + 1;
-	newBitArray->storage = (char*)malloc(sizeof(char)*byteCount);
+	newBitArray->storage = (unsigned char*)malloc(sizeof(char)*byteCount);
 	for (int i = 0; i < byteCount; ++i) {
 		newBitArray->storage[i] = original->storage[i];
 	}
@@ -116,9 +149,9 @@ void buildBitMapFromTree(TBitArray** storagePtr, TTreeNode* currentRootPtr, TBit
 
 void pushBitToBitArray(TBitArray* Array, int toPush) {
 	if (Array->bitCount % 8 == 0) {
-		Array->storage = (char*)realloc(Array->storage, Array->bitCount / 8 + 1);
+		Array->storage = (unsigned char*)realloc(Array->storage, Array->bitCount / 8 + 1);
 	}
-	char mask = ((char)1) << (7 - (Array->bitCount % 8));
+	char mask = ((unsigned char)1) << (Array->bitCount % 8);
 	if (toPush == 0) {
 		Array->storage[Array->bitCount / 8] &= (~mask);
 	}
@@ -126,6 +159,29 @@ void pushBitToBitArray(TBitArray* Array, int toPush) {
 		Array->storage[Array->bitCount / 8] |= mask;
 	}
 	++(Array->bitCount);
+}
+
+void pushBitsToOutputStream(FILE* fileStream, TBitArray* buffer, TBitArray* toPush){
+	*(buffer->storage) &= (~((unsigned char)0)) >> (8 - buffer->bitCount);
+	int writeCount = (buffer->bitCount + toPush->bitCount) / 8;
+	for (int i = 0; i < writeCount; ++i){
+		*(buffer->storage) |= toPush->storage[i] << (buffer->bitCount);
+		fputc(*(buffer->storage), fileStream);
+		*(buffer->storage) &= (unsigned char)0;
+		*(buffer->storage) |= toPush->storage[i] >> (8 - buffer->bitCount);
+	}
+	if (writeCount * 8<(toPush->bitCount)){
+		*(buffer->storage) |= (toPush->storage[writeCount] << buffer->bitCount);
+	}
+	buffer->bitCount = (buffer->bitCount + toPush->bitCount) % 8;
+}
+
+void encode(TTreeNode* root){
+	TBitArray* buffer = (TBitArray*)malloc(sizeof(TBitArray));
+	buffer->storage = (unsigned char*)malloc(sizeof(unsigned char));
+	buffer->bitCount = 3;
+
+
 }
 
 int main() {
@@ -147,6 +203,8 @@ TBitArray* initialCode = (TBitArray*)malloc(sizeof(TBitArray));
 initialCode->bitCount = 0;
 initialCode->storage = NULL;
 buildBitMapFromTree(bitMapPtrArray, treeRootPtr, initialCode);
+
+
 
 return 0;
 }
