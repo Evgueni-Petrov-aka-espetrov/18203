@@ -217,8 +217,9 @@ void textencode(FILE *in, FILE *out, tree *root) {
 	c = fgetc(in);
 	//fprintf(stderr, " '%d' ", c);
 	fprintf(stderr, "%d ", root->usage);
-	printnum(root->usage, out);
-	fprintf(out, " ");
+	//printnum(root->usage, out);
+	fwrite(&root->usage, sizeof(int), 1, out);
+	//fprintf(out, " ");
 	unsigned char buf = 0;
 	int buf_sym = 0;
 	int i;
@@ -303,7 +304,7 @@ void zip(FILE *fin, FILE *fout) {
 		//printf(" %d ", ch);
 		fprintf(fout, "%c", ch);
 		//printf(" '%d' ", treePtr->right->usage);
-		fprintf(fout, "\r\n");
+		//fprintf(fout, "\r\n");
 		//text encoding
 		fseek(fin, 0L, SEEK_SET);   /* move to start of fin */
 		//char h = fgetc(fin);
@@ -402,13 +403,15 @@ int scannum(FILE *in){
 	return res;
 }
 void textdecode(tree *root, FILE *out, FILE *in) {
-	unsigned char c = fgetc(in);
-	//printf("'%d' ", c);
-	c = fgetc(in);
+	//unsigned char c = fgetc(in);
 	//printf("'%d' ", c);
 	//c = fgetc(in);
 	//printf("'%d' ", c);
-	int lengthoftext = scannum(in);
+	//c = fgetc(in);
+	//printf("'%d' ", c);
+//	int lengthoftext = scannum(in);
+	int lengthoftext;
+	fread(&lengthoftext, sizeof(int), 1, in);
 	//while (c != ' ') {
 	//	//printf("'%c' ", c);
 	//	int r = c - 48;
@@ -417,7 +420,7 @@ void textdecode(tree *root, FILE *out, FILE *in) {
 	//}
 	fprintf(stderr, "  %d   ", lengthoftext);
 
-	c = fgetc(in);
+	unsigned char c = fgetc(in);
 	int i = 0;
 	int counter = 7;
 	//printf("%d", c);
