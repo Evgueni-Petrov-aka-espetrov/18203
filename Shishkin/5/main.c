@@ -219,6 +219,8 @@ void textencode(FILE *in, FILE *out, tree *root) {
 	fprintf(stderr, "%d ", root->usage);
 	//printnum(root->usage, out);
 	fwrite(&root->usage, sizeof(int), 1, out);
+	int z = ftell(out);
+	fprintf(stderr, "    %d     ", z);
 	//fprintf(out, " ");
 	unsigned char buf = 0;
 	int buf_sym = 0;
@@ -242,6 +244,8 @@ void textencode(FILE *in, FILE *out, tree *root) {
 			if (buf_sym > 7) {
 				//printf("%d ", buf);
 				fprintf(out, "%c", buf);
+				//int z1 = ftell(out);
+				//fprintf(stderr, "    %d     ", z1);
 				buf = buf << 8;
 				buf_sym = 0;
 			}
@@ -250,10 +254,15 @@ void textencode(FILE *in, FILE *out, tree *root) {
 		}
 		//c = fgetc(in);
 		//fprintf(stderr, " '%d' ", c);
+
 	}
-	buf = buf << (7 - buf_sym);
-	//printf("%d ", buf);
-	fprintf(out, "%c", buf);
+	if (buf_sym > 0) {
+		buf = buf << (7 - buf_sym);
+		//printf("%d ", buf);
+		fprintf(out, "%c", buf);
+	}
+	z = ftell(out);
+	fprintf(stderr, "    %d     ", z);
 }
 void zip(FILE *fin, FILE *fout) {
 	int c;
@@ -299,10 +308,14 @@ void zip(FILE *fin, FILE *fout) {
 		unsigned char ch = 0;
 		int counter = 0;
 		//printf(" '%c' ", treePtr->left->right->symbol);
+		int z = ftell(fout);
+		fprintf(stderr, "    %d     ", z);
 		keyencode(treePtr, fout, &ch, &counter);
 		ch = (ch << (8 - counter));
 		//printf(" %d ", ch);
 		fprintf(fout, "%c", ch);
+		z = ftell(fout);
+		fprintf(stderr, "    %d     ", z);
 		//printf(" '%d' ", treePtr->right->usage);
 		//fprintf(fout, "\r\n");
 		//text encoding
@@ -311,6 +324,8 @@ void zip(FILE *fin, FILE *fout) {
 		//printf("%d and '%c'  ", treePtr->right->right->left->usage, treePtr->right->right->left->symbol);
 		//printf("1");
 		textencode(fin, fout, treePtr);
+		z = ftell(fout);
+		fprintf(stderr, "    %d     ", z);
 		//printf("text cade is ready");
 	}
 	//else fprintf(res, " 1 \n");
