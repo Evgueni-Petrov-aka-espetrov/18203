@@ -212,13 +212,13 @@ int main() {
 	check_spanning(number_of_vertices, is_spanned, fout);
 	free(is_spanned);
 
-  sort_edges_by_weigth(edges,1,number_of_edges,number_of_edges);
+  	sort_edges_by_weigth(edges,1,number_of_edges,number_of_edges);
 
-  int *vertices=(int*)malloc((number_of_vertices+1)*sizeof(int));
-  for(int i=0;i<number_of_vertices+1;i++){
-   vertices[i]=i;
-  } 
-  create_edge_frame(edges, number_of_edges, number_of_vertices, vertices, fout);
+  	int *vertices=(int*)malloc((number_of_vertices+1)*sizeof(int));
+  	for(int i=0;i<number_of_vertices+1;i++){
+   		vertices[i]=i;
+  	}	 
+  	create_edge_frame(edges, number_of_edges, number_of_vertices, vertices, fout);
 	free(edges);
 	free(vertices);
 	fclose(fin);
