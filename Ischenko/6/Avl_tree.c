@@ -13,7 +13,6 @@
 };
 
  struct treee* create_root(int key) {
-	 
 	struct treee* root=malloc(sizeof(struct treee));
 	root->element = key;
 	root->height = 1;
@@ -28,7 +27,6 @@ int get_height(struct treee *root) {
 	}
 	else {
 		return 0;
-
 	}
 }
 
@@ -72,7 +70,6 @@ struct treee* rotate_to_left(struct treee *root) {
 
 struct treee* balance_tree(struct treee* root) {
 	fix_height(root);
-	
 		if (find_balance_factor(root) == 2) {
 			if (find_balance_factor(root->right) < 0) {
 				root->right = rotate_to_right(root->right);
@@ -85,7 +82,6 @@ struct treee* balance_tree(struct treee* root) {
 			}
 			return rotate_to_right(root);
 		}
-	
 	return root;
 }
 
@@ -126,7 +122,6 @@ int main() {
 	tree_height = get_height(tree);
 	delete_tree(tree);
 	fprintf(fout,"%d",tree_height);
-	tree_height++;
 	fclose(fin);
 	fclose(fout);
 }
