@@ -11,54 +11,26 @@ struct tree {
 typedef struct tree tree;
 int readnum(FILE *in) {
 	int num = 0;
-	char c = fgetc(in);
-	assert((c >= '0') && (c <= '9'));
-	while (c != ' ') {
+	int c = fgetc(in);
+	//assert((c-48 >= 0) && (c-48 <= 9));
+	while ((c != 32)&&(c != EOF)) {
 		num = num * 10;
-		num = num + (c - '0');
-		char c = fgetc(in);
-		assert((c >= '0') && (c <= '9'));
+		num = num + (c - 48);
+		c = fgetc(in);
+		//assert((c >= '0') && (c <= '9'));
 	}
+	//printf("%d ", num);
 	return num;
 }
-void filltree(FILE *in, tree *root) {
-	int i = 0;
-	int amount;
-	fgets(amount, 20, in);
-	for (i; i < amount; i++) {
-		int num = readnum(in);
-		raitplace(num, root);
-	}
-}
-int raitplace(int num, tree *root) {
-	if (root != NULL) {
-		int height;
-		if (num >= root->num) {
-			height = raitplace(num, root->right);
-			height++;
-			if (height > root->height) root->height = height;
-			root = balancetree(root);
-		}
-		else {
-			height = raitplace(num, root->left);
-			height++;
-			if (height > root->height) root->height = height;
-			root = balancetree(root);
-		}
-	}
-	else {
-		tree *leaf = (tree*)malloc(sizeof(tree));
-		leaf->num = num;
-		leaf->height = 0;
-		leaf->left = NULL;
-		leaf->right = NULL;
-		root = leaf;
-	}
-	return root->height;
-}
+
 int qb(tree *root) {
-	if ((root->left->height - root->right->height) >= 2) return 1;
-	if ((root->left->height - root->right->height) <= -2) return 1;
+	int left, right;
+	if (root->left == NULL) left = 0;
+	else left = root->left->height;
+	if (root->right == NULL) right = 0;
+	else right = root->right->height;
+
+	if ((left - right >= 2) || (left - right <= -2)) return 1;
 	else return 0;
 }
 tree *fixheight(tree *root) {
@@ -69,9 +41,19 @@ tree *fixheight(tree *root) {
 tree *balancetree(tree *root) {
 	int res = qb(root);
 	if (res == 1) {
-		if (root->right->height > root->left->height) {
+		int left, right;
+		if (root->left == NULL) left = 0;
+		else left = root->left->height;
+		if (root->right == NULL) right = 0;
+		else right = root->right->height;
+		if (right > left) {
 			//right turn;
-			if (root->right->right->height > root->right->left->height) {
+			int left1, right1;
+			if (root->right->right == NULL) right1 = 0;
+			else right1 = root->right->right->height;
+			if (root->right->left == NULL) left1 = 0;
+			else left1 = root->right->left->height;
+			if (right1 > left1) {
 				//right small
 				tree *tmp = root->left;
 				root->left = tmp->right;
@@ -79,7 +61,7 @@ tree *balancetree(tree *root) {
 				root = tmp;
 				fixheight(root->left);
 				fixheight(root);
-				return root;
+				
 			}
 			else {
 				//right big
@@ -90,19 +72,24 @@ tree *balancetree(tree *root) {
 				fixheight(root->left->right);
 				fixheight(root->left);
 
-				tree *tmp = root->left;
+				tmp = root->left;
 				root->left = tmp->right;
 				tmp->right = root;
 				root = tmp;
 				fixheight(root->left);
 				fixheight(root);
 
-				return root;
+				
 			}
 		}
 		else {
 			//left turn;
-			if (root->left->left->height > root->left->right->height) {
+			int left1, right1;
+			if (root->left->right == NULL) right1 = 0;
+			else right1 = root->left->right->height;
+			if (root->left->left == NULL) left1 = 0;
+			else left1 = root->left->left->height;
+			if (left1 > right1) {
 				//left small
 				tree *tmp = root->right;
 				root->right = tmp->left;
@@ -110,7 +97,7 @@ tree *balancetree(tree *root) {
 				root = tmp;
 				fixheight(root->right);
 				fixheight(root);
-				return root;
+				
 			}
 			else {
 				//left big
@@ -121,18 +108,71 @@ tree *balancetree(tree *root) {
 				fixheight(root->right->left);
 				fixheight(root->right);
 
-				tree *tmp = root->right;
+				tmp = root->right;
 				root->right = tmp->left;
 				tmp->left = root;
 				root = tmp;
 				fixheight(root->right);
 				fixheight(root);
 
-				return root;
+				
 			}
 		}
 	}
+	return root;
 }
+tree *raitplace(int num, int *height, tree *root) {
+	if (root != NULL) {
+
+		if (num >= root->num) {
+			root->right = raitplace(num, height, root->right);
+			*height = *height + 1;
+			if (*height > root->height) root->height = *height;
+			root = balancetree(root);
+		}
+		else {
+			printf("1");
+			root->left = raitplace(num, height, root->left);
+			printf("%d   ", root->height);
+			*height = *height + 1;
+			printf("%d   ", *height);
+			if (*height > root->height) root->height = *height;
+			printf("%d   ", root->height);
+			root = balancetree(root);
+		}
+	}
+	else {
+		tree *leaf = (tree*)malloc(sizeof(tree));
+		leaf->num = num;
+		leaf->height = 1;
+		*height = 1;
+		leaf->left = NULL;
+		leaf->right = NULL;
+		root = leaf;
+	}
+	return root;
+}
+tree *filltree(FILE *in, tree *root) {
+	int i = 0;
+	int amount = 0;
+	int c = fgetc(in);
+	while (c != 10){
+		//printf("%d  ", c);
+		amount = amount * 10 + (c - 48);
+		c = fgetc(in);
+	}
+	//printf("%d", amount);
+	int height = 0;
+	for (i; i < amount; i++) {
+		
+		int num = readnum(in);
+		printf("%d ", num);
+		root = raitplace(num, &height, root);
+	}
+	//printf("   ---%d---  ", root->num);
+	return root;
+}
+
 int main() {
 	FILE *fin = fopen("in.txt", "r");
 	FILE *fout = fopen("out.txt", "w");
@@ -141,7 +181,9 @@ int main() {
 		fprintf(fout, "File could not be opened");
 	else {
 		tree *root = NULL;
-	
+		root = filltree(fin, root);
+		if (root == NULL) fprintf(fout, "0");
+		else fprintf(fout, "%d", root->height);
 	}
 	fclose(fin);
 	fclose(fout);
