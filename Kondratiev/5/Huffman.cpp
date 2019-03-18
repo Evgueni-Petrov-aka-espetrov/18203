@@ -18,6 +18,9 @@ TTree* readTree(TBitStream* bitStream);
 int readSymbol(TBitStream* bitStream, TNode* treeRoot);
 unsigned int readInt(FILE* file);
 void writeInt(FILE* file, unsigned int value);
+void prepareTreeForOutput(TTree* tree, TNode** leafPtrs);
+void _prepareTreeForOutput(TNode* node, TNode** leafPtrs);
+void writeSymbol(TNode* symbolNode, TBitStream* bitStream);
 
 struct TNode {
 	int value;
@@ -140,9 +143,6 @@ struct TBitStream {
 			numberOfFilledBits -= sizeof(unsigned long long) * 4;
 		}
 	}
-	void writeCode(int code) {
-		write(code, code >> sizeof(int) * 6);
-	}
 	void writeTail() {
 		writeInt(targetFile, (unsigned int)(buffer >> (sizeof(unsigned long long) * 4)));
 		buffer = 0;
@@ -180,37 +180,56 @@ struct TBitStream {
 int main() {
 	FILE* in = fopen("in.txt", "rb");
 	FILE* out = fopen("out.txt", "wb");
-	if (in == NULL || out == NULL)
+	if (in == NULL || out == NULL) {
+		FILE* error = fopen("error.txt", "w");
+		if (error == NULL)
+			return -2;
+		fprintf(error, "Can't open files: ");
+		if (in == NULL) {
+			if (out == NULL) {
+				fprintf(error, "in.txt, out.txt.");
+			}
+			else {
+				fprintf(error, "in.txt.");
+			}
+		}
+		else {
+			fprintf(error, "out.txt.");
+		}
+		fclose(error);
 		return -1;
+	}
 
 	unsigned char mode = fgetc(in);
 	fgetc(in); fgetc(in);
-	if (fgetc(in) == EOF)
-		goto end;
-	fseek(in, -1, SEEK_CUR);
-	if (mode == 'c') {
+	switch (mode) {
+	case 'c':
 		compress(in, out);
-	}
-	if (mode == 'd') {
+		break;
+	case 'd':
 		decompress(in, out);
-	}/**/
+		break;
+	case 't':
+		compress(in, out);
+		fclose(in);
+		fclose(out);
+		in = fopen("out.txt", "rb");
+		out = fopen("out2.txt", "wb");
+		decompress(in, out);
+	}
 
-	/*compress(in, out);	//для тестирования
-	fclose(in);
-	fclose(out);
-	in = fopen("out.txt", "rb");
-	out = fopen("out2.txt", "wb");
-	decompress(in, out);/**/
-
-end:
 	fclose(in);
 	fclose(out);
 }
 
 void compress(FILE* in, FILE* out) {
 	int textSize = 0;
-	int numberOfSymbols[256] = { 0 };
+	int numberOfSymbols[512] = { 0 };
 	int temp = fgetc(in);			//чтение файла и подсчёт символов
+	if (temp == EOF) {
+		writeInt(out, 0);
+		return;
+	}
 	while (temp != EOF) {
 		++numberOfSymbols[temp];
 		temp = fgetc(in);
@@ -227,23 +246,48 @@ void compress(FILE* in, FILE* out) {
 			stack->add(symbolTree->addNode(symbol), numberOfSymbols[symbol]);
 	while (stack->uniteLastTwo(symbolTree));
 	symbolTree->root = stack->get();
-#define symbolCodes numberOfSymbols		//генерация кодов символов
-	generateSymbolCodes(symbolTree->root, symbolCodes);	//по дереву сверху вниз - по коду слева направо
-	fseek(in, 3, SEEK_SET);				//вывод кол-ва символов, дерева, генерация и вывод сжатого текста
-	writeInt(out, textSize);			//^+
+#define symbolPtrs (TNode**)numberOfSymbols		//вывод
+	writeInt(out, textSize);
+	fseek(in, 3, SEEK_SET);
 	TBitStream* oBitStream = TBitStream::createAndInit(out);
 	printTree(oBitStream, symbolTree->root);
+	prepareTreeForOutput(symbolTree, symbolPtrs);
 	for (int i = 0; i != textSize; ++i)
-		oBitStream->writeCode(symbolCodes[fgetc(in)]);
+		writeSymbol(*(symbolPtrs + fgetc(in)), oBitStream);
 	oBitStream->writeTail();
-#undef symbolCodes
+#undef symbolPtrs
 	symbolTree->freeTree();
 	stack->freeStack();
 	oBitStream->freeStream();
 }
 
+void writeSymbol(TNode* symbolNode, TBitStream* bitStream) {
+	if (symbolNode->child1 == NULL)
+		return;
+	writeSymbol(symbolNode->child1, bitStream);
+	bitStream->write(symbolNode->child1->child2 == symbolNode, 1);
+}
+
+void _prepareTreeForOutput(TNode* node, TNode** leafPtrs){
+	if (node->child1 == NULL) {
+		leafPtrs[node->value] = node;
+		return;
+	}
+	_prepareTreeForOutput(node->child1, leafPtrs);
+	node->child1->child1 = node;
+	_prepareTreeForOutput(node->child2, leafPtrs);
+	node->child2->child1 = node;
+}
+
+void prepareTreeForOutput(TTree* tree, TNode** leafPtrs) {
+	_prepareTreeForOutput(tree->root, leafPtrs);
+	tree->root->child1 = NULL;
+}
+
 void decompress(FILE* in, FILE* out) {
 	unsigned int textSize = readInt(in);
+	if (textSize == 0)
+		return;
 	TBitStream* iBitStream = TBitStream::createAndInit(in);
 	TTree* symbolTree = readTree(iBitStream);
 	for (int i = 0; i != textSize; ++i)
@@ -309,18 +353,13 @@ bool generateSymbolCodes(TNode* symbolTreeRoot, int* symbolCodesArray) {
 }
 
 unsigned int readInt(FILE* file) {
-	unsigned int buffer = fgetc(file);
-	buffer = (buffer << 8) + fgetc(file);
-	buffer = (buffer << 8) + fgetc(file);
-	buffer = (buffer << 8) + fgetc(file);
-	return (buffer);
+	unsigned int buffer;
+	fread((char*)&buffer, sizeof(buffer), 1, file);
+	return buffer;
 }
 
 void writeInt(FILE* file, unsigned int value) {
-	fputc(value >> 24 , file);
-	fputc(value << 8 >> 24, file);
-	fputc(value << 16 >> 24, file);
-	fputc(value << 24 >> 24, file);
+	fwrite((char*)&value, sizeof(value), 1, file);
 }
 
 void swap(TNode** nodePtr1, TNode** nodePtr2) {
