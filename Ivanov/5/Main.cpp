@@ -18,13 +18,17 @@ struct TTreeNodeQueue {
 	TTreeNodePtrListNode* tail;
 };
 
-int myFeof(FILE* stream) {
-	fpos_t currentPos;
-	fgetpos(stream, &currentPos);
-	unsigned char dummy;
-	int result = fread(&dummy, sizeof(unsigned char), 1, stream);
-	fsetpos(stream, &currentPos);
-	return !result;
+long bytesLeft;
+
+void getFileSize(FILE* stream){
+	long currentPos = ftell(stream);
+	fseek(stream, 0, SEEK_END);
+	bytesLeft = ftell(stream);
+	fseek(stream, currentPos, SEEK_SET);
+}
+
+int myFeof(FILE* stream) { ////////////////////////////////
+	return !bytesLeft;
 }
 
 void pushTreeNodeToQueue(TTreeNode* toPush, TTreeNodeQueue* queue) {
@@ -157,19 +161,6 @@ void buildBitMapFromTree(TBitArray** storagePtr, TTreeNode* currentRootPtr, TBit
 	}
 }
 
-void printByte(unsigned char byte, char* msg) {
-	printf("%s ", msg);
-	for (int i = 7; i >= 0; --i) {
-		if (byte & (((unsigned char)1) << i)) {
-			printf("1");
-		}
-		else {
-			printf("0");
-		}
-	}
-	printf("\n");
-}
-
 void pushBitToBitArray(TBitArray* Array, int toPush) {
 	if (Array->bitCount % 8 == 0) {
 		Array->storage = (unsigned char*)realloc(Array->storage, Array->bitCount / 8 + 1);
@@ -219,6 +210,7 @@ int takeBitFromInputStream(FILE* fileInput, TBitArray* buffer) {
 	if (buffer->bitCount == 0) {
 		buffer->storage = (unsigned char*)realloc(buffer->storage, sizeof(unsigned char));
 		fread(buffer->storage, sizeof(unsigned char), 1, fileInput);
+		--bytesLeft;
 		buffer->bitCount = 8;
 	}
 	return popBitFromBitArray(buffer);
@@ -271,7 +263,6 @@ void flushOutputBitStream(FILE* fileOutput, TBitArray* buffer) {
 	rewind(fileOutput);
 	if (!fb) return;
 	unsigned char firstByte = *(fb->storage);
-	//fread(&firstByte, sizeof(unsigned char), 1, fileOutput);
 	firstByte &= ((~((unsigned char)0)) << 3);
 	firstByte |= paddingSize;
 	rewind(fileOutput);
@@ -360,12 +351,12 @@ void decompress(FILE* fileInput, FILE* fileOutput) {
 	buffer->bitCount = 5;
 	buffer->storage = (unsigned char*)malloc(sizeof(unsigned char));
 	fread(buffer->storage, sizeof(unsigned char), 1, fileInput);
+	bytesLeft--;
 	unsigned char paddingSize = (*(buffer->storage) & (((unsigned char)(~((unsigned char)0))) >> 5)); /////////////////
 	TTreeNode* root = decodeTree(fileInput, buffer);
 	while (!(myFeof(fileInput) && (buffer->bitCount == paddingSize))) {
 		unsigned char inp = decodeCharFromInputStream(fileInput, buffer, root);
 		fwrite(&inp, sizeof(unsigned char), 1, fileOutput);
-		//printf("%c", inp);
 	}
 }
 
@@ -375,8 +366,6 @@ int main() {
 	if (fileInput == NULL || fileOutput == NULL) {
 		return 1;
 	}
-
-
 
 	char buf[5];
 	if (!fgets(buf, 5, fileInput)) return 1;
@@ -403,6 +392,8 @@ int main() {
 		compress(treeRootPtr, bitMapPtrArray, fileInput, fileOutput);
 	}
 	else {
+		getFileSize(fileInput);
+		bytesLeft -= 3;
 		decompress(fileInput, fileOutput);
 	}
 
