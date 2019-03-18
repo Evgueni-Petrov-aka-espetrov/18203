@@ -143,17 +143,19 @@ tree *raitplace(int num, int *height, tree *root) {
 
 		if (num >= root->num) {
 			root->right = raitplace(num, height, root->right);
-			*height = *height + 1;
-			if (*height > root->height) root->height = *height;
+			//*height = *height + 1;
+			root = fixheight(root);
+			//if (*height > root->height) root->height = *height;
 			root = balancetree(root);
 		}
 		else {
 			//printf("1");
 			root->left = raitplace(num, height, root->left);
 			//printf("%d   ", root->height);
-			*height = *height + 1;
+			//*height = *height + 1;
 			//printf("%d   ", *height);
-			if (*height > root->height) root->height = *height;
+			root = fixheight(root);
+			//if (*height > root->height) root->height = *height;
 			//printf("%d   ", root->height);
 			root = balancetree(root);
 		}
@@ -199,6 +201,7 @@ int main() {
 	else {
 		tree *root = NULL;
 		root = filltree(fin, root);
+		//printf("%d ", root->num);
 		if (root == NULL) fprintf(fout, "0");
 		else fprintf(fout, "%d", root->height);
 	}
