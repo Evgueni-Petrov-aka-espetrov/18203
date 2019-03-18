@@ -119,7 +119,6 @@ int main() {
 		tree = insert(tree, element);
 	}
 	tree_height = get_height(tree);
-	delete_tree(tree);
 	fprintf(fout,"%d",tree_height);
 	fclose(fin);
 	fclose(fout);
