@@ -28,7 +28,13 @@ int readnum(FILE *in) {
 	//fprintf(stderr, "%d    ", num);
 	return num;
 }
-
+void freetree(tree *root){
+	if (root != NULL){
+		freetree(root->right);
+		freetree(root->left);
+		free(root);
+	}
+}
 int qb(tree *root) {
 	int left, right;
 	if (root->left == NULL) left = 0;
@@ -204,6 +210,7 @@ int main() {
 		//printf("%d ", root->num);
 		if (root == NULL) fprintf(fout, "0");
 		else fprintf(fout, "%d", root->height);
+		freetree(root);
 	}
 	fclose(fin);
 	fclose(fout);
