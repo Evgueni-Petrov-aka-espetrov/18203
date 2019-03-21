@@ -9,7 +9,7 @@ PQueue *CreateQueue() {
 		return queue;
 	}
 	else {
-		printf("not enough memory");
+		fprintf(stderr, "not enough memory\n");
 		exit(0);
 	}
  }
@@ -68,7 +68,7 @@ int GetMin(PQueue *queue, QueueElement *toGet) {
 	return 1;
 }
 
-int Insert(PQueue *queue, unsigned long long priority, T data) {
+int Insert(PQueue *queue, unsigned int priority, T data) {
 	if (queue->heapSize >= QMAXSIZE) return 0;
 	queue->heap[queue->heapSize].data = data;
 	queue->heap[queue->heapSize].priority = priority;

@@ -8,7 +8,7 @@
 #define INTERNAL -1
 #define END -1
 #define CODE_MAX_SIZE 65 // 64 + edge
-#define ULL_BIT (CHAR_BIT * sizeof(unsigned long long)) 
+#define INT_BIT (CHAR_BIT * sizeof(unsigned int)) 
 #define CHAR_AMOUNT 256
 
 typedef struct {
@@ -18,12 +18,12 @@ typedef struct {
 
 typedef struct TTree{
 	int symbol;
-	unsigned long long frequence;
+	unsigned int frequence;
 	struct TTree *leftChild;
 	struct TTree *rightChild;
 } TTree;
 
-void CountFreq(FILE *fileToRead, unsigned long long freq[CHAR_AMOUNT]) {
+void CountFreq(FILE *fileToRead, unsigned int freq[CHAR_AMOUNT]) {
 	int c;
 	long curPosInFile = ftell(fileToRead);
 	for (int i = 0; i < CHAR_AMOUNT; ++i) {
@@ -33,14 +33,15 @@ void CountFreq(FILE *fileToRead, unsigned long long freq[CHAR_AMOUNT]) {
 		++freq[c];
 	}
 	if (fseek(fileToRead, curPosInFile, SEEK_SET)) {
-		fprintf(stderr, "file error");
+		fprintf(stderr, "file error\n");
 		exit(0);
 	}
 	return;
 }
 
-TTree *CreateTreeNode(int symbol, unsigned long long frequence, TTree *leftChild, TTree *rightChild) {
+TTree *CreateTreeNode(int symbol, unsigned int frequence, TTree *leftChild, TTree *rightChild) {
 	TTree *newNode = (TTree*)malloc(sizeof(TTree));
+	assert(newNode != NULL);
 	newNode->symbol = symbol;
 	newNode->frequence = frequence;
 	newNode->leftChild = leftChild;
@@ -48,7 +49,7 @@ TTree *CreateTreeNode(int symbol, unsigned long long frequence, TTree *leftChild
 	return newNode;
 }
 
-void FillQueue(PQueue *queue, const unsigned long long freq[CHAR_AMOUNT]) {
+void FillQueue(PQueue *queue, const unsigned int freq[CHAR_AMOUNT]) {
 	for (int i = 0; i < QMAXSIZE; ++i) {
 		if (freq[i] != 0) {
 			TTree *charNode = CreateTreeNode(i, freq[i], NULL, NULL);
@@ -60,10 +61,10 @@ void FillQueue(PQueue *queue, const unsigned long long freq[CHAR_AMOUNT]) {
 TTree *BuildCodeTree(PQueue *queue) {
 	QueueElement firstMin;
 	QueueElement secMin;
-	if (ExtractMin(queue, &firstMin) == 0) {
+	if (!ExtractMin(queue, &firstMin)) {
 		return NULL;
 	}
-	if (ExtractMin(queue, &secMin) == 0) {
+	if (!ExtractMin(queue, &secMin)) {
 		return (TTree*)firstMin.data;
 	}
 	TTree *firstChild = (TTree*)firstMin.data;
@@ -75,11 +76,12 @@ TTree *BuildCodeTree(PQueue *queue) {
 }
 
 void DeleteTree(TTree *root) {
-	TTree *leftChild = root->leftChild;
-	TTree *rightChild = root->rightChild;
+	if (root == NULL) {
+		return;
+	}
+	DeleteTree(root->leftChild);
+	DeleteTree(root->rightChild);
 	free(root);
-	if (leftChild != NULL) DeleteTree(leftChild);
-	if (rightChild != NULL) DeleteTree(rightChild);
 	return;
 }
 
@@ -108,40 +110,28 @@ unsigned char ByteToChar(const int byte[CHAR_BIT]) {
 }
 
 void CharToByte(unsigned char ch, int byte[CHAR_BIT]) {
-	int i = CHAR_BIT - 1;
-	while (ch > 0) {
+	for (int i = CHAR_BIT - 1; i >= 0; --i) {
 		byte[i] = ch % 2;
 		ch /= 2;
-		--i;
-	}
-	while (i >= 0) {
-		byte[i] = 0;
-		--i;
 	}
 	return;
 }
 
-void LongIntToBytes(unsigned long long longInt, int bytes[ULL_BIT]) {
-	int i = ULL_BIT - 1;
-	while (longInt > 0) {
-		bytes[i] = longInt % 2;
-		longInt /= 2;
-		--i;
-	}
-	while (i >= 0) {
-		bytes[i] = 0;
-		--i;
+void IntToBytes(unsigned int num, int bytes[INT_BIT]) {
+	for (int i = INT_BIT - 1; i >= 0; --i) {
+		bytes[i] = num % 2;
+		num /= 2;
 	}
 	return;
 }
 
-unsigned long long BytesToLongInt(const int bytes[ULL_BIT]) {
-	unsigned long long longInt = 0;
-	for (int i = 0; i < ULL_BIT; ++i) {
-		longInt *= 2;
-		longInt += bytes[i];
+unsigned int BytesToInt(const int bytes[INT_BIT]) {
+	unsigned int num = 0;
+	for (int i = 0; i < INT_BIT; ++i) {
+		num *= 2;
+		num += bytes[i];
 	}
-	return longInt;
+	return num;
 }
 
 void WriteCharToFile(unsigned char ch, BitStream *bitStream, FILE *fileToWrite) {
@@ -154,10 +144,10 @@ void WriteCharToFile(unsigned char ch, BitStream *bitStream, FILE *fileToWrite) 
 	}
 }
 
-void WriteLongIntToFile(unsigned long long longInt, BitStream *bitStream, FILE *fileToWrite) {
-	int bytes[ULL_BIT];
-	LongIntToBytes(longInt, bytes);
-	for (int i = 0; i < ULL_BIT; ++i) {
+void WriteIntToFile(unsigned int num, BitStream *bitStream, FILE *fileToWrite) {
+	int bytes[INT_BIT];
+	IntToBytes(num, bytes);
+	for (int i = 0; i < INT_BIT; ++i) {
 		if (AddBitToStream(bitStream, bytes[i])) {
 			fputc(ByteToChar(bitStream->buffer), fileToWrite);
 		}
@@ -172,7 +162,7 @@ int GetBitFromFile(BitStream *bitStream, FILE *fileToRead) {
 	if (bitStream->position == 0) {
 		int nextChar = fgetc(fileToRead);
 		if (nextChar != EOF) {
-			CharToByte(nextChar, bitStream->buffer);
+			CharToByte((unsigned char)nextChar, bitStream->buffer);
 		}
 		else return EOF;
 	}
@@ -191,12 +181,12 @@ int GetCharFromFile(BitStream *bitStream, FILE *fileToRead) {
 	return ByteToChar(nextChar);
 }
 
-unsigned long long GetLongIntFromFile(BitStream *bitStream, FILE *fileToRead) {
-	int bytes[ULL_BIT];
-	for (int i = 0; i < ULL_BIT; ++i) {
+unsigned int GetIntFromFile(BitStream *bitStream, FILE *fileToRead) {
+	int bytes[INT_BIT];
+	for (int i = 0; i < INT_BIT; ++i) {
 		bytes[i] = GetBitFromFile(bitStream, fileToRead);
 	}
-	return BytesToLongInt(bytes);
+	return BytesToInt(bytes);
 }
 
 void Serialize(const TTree *codeTree, BitStream *bitStream, FILE *fileToWrite) {
@@ -260,7 +250,10 @@ int GetCode(int ch, int codeString[CODE_MAX_SIZE], const TTree *codeTree) {
 }
 
 void Encode(FILE *fileToRead, const TTree *codeTree, BitStream *bitStream, FILE *fileToWrite) {
-	WriteLongIntToFile(codeTree->frequence, bitStream, fileToWrite);
+	if (codeTree == NULL) {
+		return;
+	}
+	WriteIntToFile(codeTree->frequence, bitStream, fileToWrite);
 	int nextChar;
 	int charCode[CODE_MAX_SIZE];
 	while ((nextChar = fgetc(fileToRead)) != EOF) {
@@ -283,7 +276,7 @@ void Encode(FILE *fileToRead, const TTree *codeTree, BitStream *bitStream, FILE 
 }
 
 void Compress(FILE *fileIn, FILE *fileOut) {
-	unsigned long long frequences[CHAR_AMOUNT];
+	unsigned int frequences[CHAR_AMOUNT];
 	CountFreq(fileIn, frequences);
 	PQueue *queue = CreateQueue();
 	FillQueue(queue, frequences);
@@ -300,10 +293,14 @@ void Compress(FILE *fileIn, FILE *fileOut) {
 
 TTree *Unserialize(FILE *fileToRead, BitStream *bitStream) {
 	TTree *newNode;
-	if (GetBitFromFile(bitStream, fileToRead) == 0) {
-		newNode = CreateTreeNode(INTERNAL, FILLER, 
-			Unserialize(fileToRead, bitStream), 
-			Unserialize(fileToRead, bitStream));
+	int nextBit = GetBitFromFile(bitStream, fileToRead);
+	if (nextBit == EOF) {
+		return NULL;
+	}
+	else if (nextBit == 0) {
+		TTree *leftChild = Unserialize(fileToRead, bitStream);
+		TTree *rightChild = Unserialize(fileToRead, bitStream);
+		newNode = CreateTreeNode(INTERNAL, FILLER, leftChild, rightChild);
 	}
 	else {
 		newNode = CreateTreeNode(GetCharFromFile(bitStream, fileToRead), FILLER, NULL, NULL);
@@ -328,18 +325,20 @@ int GetDecodedCharFromFile(FILE *fileToRead, const TTree *codeTree, BitStream *b
 }
 
 void Decode(FILE *fileToRead, const TTree *codeTree, BitStream *bitStream, FILE *fileToWrite) {
-	unsigned long long fileSize = GetLongIntFromFile(bitStream, fileToRead);
+	if (codeTree == NULL) {
+		return;
+	}
+	unsigned int fileSize = GetIntFromFile(bitStream, fileToRead);
 	if (codeTree->symbol != INTERNAL) {
-		for (unsigned long long i = 0; i < fileSize; ++i) {
+		for (unsigned int i = 0; i < fileSize; ++i) {
 			fputc(codeTree->symbol, fileToWrite);
 		}
 	}
 	else {
-		for (unsigned long long i = 0; i < fileSize; ++i) {
+		for (unsigned int i = 0; i < fileSize; ++i) {
 			fputc(GetDecodedCharFromFile(fileToRead, codeTree, bitStream), fileToWrite);
 		}
 	}
-
 }
 
 void Decompress(FILE *fileIn, FILE *fileOut) {

@@ -3,7 +3,7 @@ typedef void* T;
 #define QMAXSIZE 256
 
 typedef struct {
-	unsigned long long priority;
+	unsigned int priority;
 	T data;
 } QueueElement;
 
@@ -14,6 +14,6 @@ typedef struct {
 
 PQueue *CreateQueue();
 void DestroyQueue(PQueue* queue);
-int Insert(PQueue *queue, unsigned long long priority, T data);
+int Insert(PQueue *queue, unsigned int priority, T data);
 int GetMin(PQueue *queue, QueueElement *toGet);
 int ExtractMin(PQueue* queue, QueueElement *toExtract);
