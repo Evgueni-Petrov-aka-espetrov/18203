@@ -18,6 +18,13 @@ typedef struct stack {
 	struct table *next;
 	int num;
 } table;
+void freetree(tree *root){
+	if (root != NULL){
+		freetree(root->right);
+		freetree(root->left);
+		free(root);
+	}
+}
 char wtd(FILE *fin) {
 	char b = fgetc(fin);
 	char c = fgetc(fin);
@@ -94,7 +101,9 @@ tree *treecreate(textline *text) {
 		text = text1;
 		rightplace(text);
 	}
-	return (text->root);
+	tree *ptr = text->root;
+	free(text);
+	return (ptr);
 }
 int findsymbol(tree *root, char sym, int *counter, int array[]) {
 	int l_res = 1, r_res = 1;
@@ -244,6 +253,7 @@ void zip(FILE *fin, FILE *fout) {
 		textencode(fin, fout, treePtr);
 		z = ftell(fout);
 		fprintf(stderr, "    %d     ", z);
+		freetree(treePtr);
 	}
 }
 void keydecode(FILE *in, tree *root, unsigned char *ch, int *counter) {
@@ -352,6 +362,7 @@ void unzip(FILE *in, FILE *out) {
 		textdecode(root, out, in);
 		fprintf(stderr, "\n");
 	}
+	freetree(root);
 }
 int main() {
 	FILE *fout = fopen("out.txt", "wb");
