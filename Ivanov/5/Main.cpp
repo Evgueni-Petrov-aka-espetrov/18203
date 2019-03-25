@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <malloc.h>
+#include <stdlib.h>
 
 struct TTreeNode {
 	int weight;
@@ -18,6 +19,42 @@ struct TTreeNodeQueue {
 	TTreeNodePtrListNode* tail;
 };
 
+struct TBitArray {
+	unsigned char* storage;
+	int bitCount;
+};
+
+void pushTreeNodeToQueue(TTreeNode* toPush, TTreeNodeQueue* queue);
+TTreeNode* popTreeNodeFromQueue(TTreeNodeQueue* queue);
+
+void pushBitToBitArray(TBitArray* Array, int toPush);
+int popBitFromBitArray(TBitArray* array);
+TBitArray* cloneBitArray(const TBitArray* original);
+
+TTreeNodePtrListNode* buildTreeNodeList(int charStat[256]);
+TTreeNodePtrListNode* findMinWeight(TTreeNodePtrListNode* firstListNodePtr);
+TTreeNode* buildTree(int charStat[256]);
+void buildBitMap(TBitArray** storagePtr, TTreeNode* currentRootPtr, TBitArray* currentCode);
+
+TBitArray* encodeTree(TTreeNode* rootPtr);
+TTreeNode* decodeTree(FILE* inputStream, TBitArray* currentBuffer);
+
+void pushBitsToOutputStream(FILE* fileOutput, TBitArray* buffer, TBitArray* toPush);
+int takeBitFromInputStream(FILE* fileInput, TBitArray* buffer);
+void flushOutputBitStream(FILE* fileOutput, TBitArray* buffer);
+unsigned char takeByteFromInputStream(FILE* inputStream, TBitArray* buffer);
+unsigned char decodeCharFromInputStream(FILE* fileInput, TBitArray* buffer, TTreeNode* root);
+
+void compress(TTreeNode* rootPtr, TBitArray** bitMapPtrArray, FILE* fileInput, FILE* fileOutput);
+void decompress(FILE* fileInput, FILE* fileOutput);
+
+void getFileSize(FILE* stream);
+int myFeof(FILE* stream);
+void* safeMalloc(size_t byteCount);
+void* safeRealloc(void* ptr, size_t newSize);
+
+const unsigned char uCharZeroes = 0;
+const unsigned char uCharOnes = (unsigned char)(~((unsigned char)0));
 long bytesLeft;
 
 void getFileSize(FILE* stream){
@@ -31,8 +68,30 @@ int myFeof(FILE* stream) { ////////////////////////////////
 	return !bytesLeft;
 }
 
+void* safeMalloc(size_t byteCount){
+	void* result = malloc(byteCount);
+	if (result == NULL){
+		printf("out of memory");
+		exit(1);
+	}
+	else{
+		return result;
+	}
+}
+
+void* safeRealloc(void* ptr, size_t newSize){
+	void* result = realloc(ptr, newSize);
+	if (newSize != 0 && result == NULL){
+		printf("out of memory");
+		exit(1);
+	}
+	else{
+		return result;
+	}
+}
+
 void pushTreeNodeToQueue(TTreeNode* toPush, TTreeNodeQueue* queue) {
-	TTreeNodePtrListNode* newNode = (TTreeNodePtrListNode*)malloc(sizeof(TTreeNodePtrListNode));
+	TTreeNodePtrListNode* newNode = (TTreeNodePtrListNode*)safeMalloc(sizeof(TTreeNodePtrListNode));
 	newNode->next = NULL;
 	if (queue->head == NULL) {
 		queue->head = newNode;
@@ -59,34 +118,35 @@ TTreeNode* popTreeNodeFromQueue(TTreeNodeQueue* queue) {
 	return result;
 }
 
-TTreeNodePtrListNode* getTreeNodeListPtrFromStat(int charStat[256]) {
+TTreeNodePtrListNode* buildTreeNodeList(int charStat[256]) {
 	TTreeNodePtrListNode* firstListNodePtr = NULL;
+	TTreeNodePtrListNode* lastListNodePtr = NULL;
 	for (int i = 0; i <= 255; ++i) {
 		if (charStat[i] != 0) {
-			TTreeNode* newNodePtr = (TTreeNode*)malloc(sizeof(TTreeNode));  //this would be ergonomic in c++
+			TTreeNode* newNodePtr = (TTreeNode*)safeMalloc(sizeof(TTreeNode));
 			newNodePtr->weight = charStat[i];
 			newNodePtr->symbol = (unsigned char)i;
 			newNodePtr->left = NULL;
 			newNodePtr->right = NULL;
 
-			TTreeNodePtrListNode* newListNode = (TTreeNodePtrListNode*)malloc(sizeof(TTreeNodePtrListNode));
+			TTreeNodePtrListNode* newListNode = (TTreeNodePtrListNode*)safeMalloc(sizeof(TTreeNodePtrListNode));
 			newListNode->next = NULL;
 			newListNode->TTreeNodePtr = newNodePtr;
 
 			if (firstListNodePtr == NULL) {
 				firstListNodePtr = newListNode;
+				lastListNodePtr = newListNode;
 			}
 			else {
-				TTreeNodePtrListNode* currentListNodePtr = firstListNodePtr;
-				for (; currentListNodePtr->next != NULL; currentListNodePtr = currentListNodePtr->next);
-				currentListNodePtr->next = newListNode;
+				lastListNodePtr->next = newListNode;
+				lastListNodePtr = newListNode;
 			}
 		}
 	}
 	return firstListNodePtr;
 }
 
-TTreeNodePtrListNode* findMinWeightTreeNodePtrListNodePtr(TTreeNodePtrListNode* firstListNodePtr) {
+TTreeNodePtrListNode* findMinWeight(TTreeNodePtrListNode* firstListNodePtr) {
 	TTreeNodePtrListNode* result = firstListNodePtr;
 	for (TTreeNodePtrListNode* listIterator = result->next; listIterator != NULL; listIterator = listIterator->next) {
 		if (listIterator->TTreeNodePtr->weight < result->TTreeNodePtr->weight) {
@@ -96,10 +156,10 @@ TTreeNodePtrListNode* findMinWeightTreeNodePtrListNodePtr(TTreeNodePtrListNode* 
 	return result;
 }
 
-TTreeNode* getTreeRootPtr(int charStat[256]) {
-	TTreeNodePtrListNode* firstListNodePtr = getTreeNodeListPtrFromStat(charStat); //need checking
+TTreeNode* buildTree(int charStat[256]) {
+	TTreeNodePtrListNode* firstListNodePtr = buildTreeNodeList(charStat); //need checking
 	for (; firstListNodePtr->next != NULL;) {
-		TTreeNodePtrListNode* min1 = findMinWeightTreeNodePtrListNodePtr(firstListNodePtr);
+		TTreeNodePtrListNode* min1 = findMinWeight(firstListNodePtr);
 
 		for (TTreeNodePtrListNode** ptrIterator = &firstListNodePtr;; ptrIterator = &((*ptrIterator)->next)) {
 			if (*ptrIterator == min1) {
@@ -109,9 +169,9 @@ TTreeNode* getTreeRootPtr(int charStat[256]) {
 			}
 		}
 
-		TTreeNodePtrListNode* min2 = findMinWeightTreeNodePtrListNodePtr(firstListNodePtr);
+		TTreeNodePtrListNode* min2 = findMinWeight(firstListNodePtr);
 
-		TTreeNode* newTreeNodePtr = (TTreeNode*)malloc(sizeof(TTreeNode));
+		TTreeNode* newTreeNodePtr = (TTreeNode*)safeMalloc(sizeof(TTreeNode));
 		newTreeNodePtr->left = min1->TTreeNodePtr;
 		newTreeNodePtr->right = min2->TTreeNodePtr;
 		newTreeNodePtr->weight = min1->TTreeNodePtr->weight + min2->TTreeNodePtr->weight;
@@ -124,104 +184,25 @@ TTreeNode* getTreeRootPtr(int charStat[256]) {
 	return result;
 }
 
-struct TBitArray {
-	unsigned char* storage;
-	int bitCount;
-};
-
-TBitArray* fb = NULL;
-int ctrl = 0;
-
-TBitArray* cloneBitArray(const TBitArray* original) {
-	TBitArray* newBitArray = (TBitArray*)malloc(sizeof(TBitArray));
-	newBitArray->bitCount = original->bitCount;
-	if (original->bitCount == 0) {
-		newBitArray->storage = NULL;
-		return newBitArray;
-	}
-	int byteCount = ((original->bitCount - 1) / 8) + 1;
-	newBitArray->storage = (unsigned char*)malloc(sizeof(char)*byteCount);
-	for (int i = 0; i < byteCount; ++i) {
-		newBitArray->storage[i] = original->storage[i];
-	}
-	return newBitArray;
-}
-void pushBitToBitArray(TBitArray* Array, int toPush);
-
-void buildBitMapFromTree(TBitArray** storagePtr, TTreeNode* currentRootPtr, TBitArray* currentCode) {
+void buildBitMap(TBitArray** storagePtr, TTreeNode* currentRootPtr, TBitArray* currentCode) {
 	if (currentRootPtr->left != NULL) {
 		TBitArray* newBitArray = cloneBitArray(currentCode);
 		pushBitToBitArray(currentCode, 1);
 		pushBitToBitArray(newBitArray, 0);
-		buildBitMapFromTree(storagePtr, currentRootPtr->left, currentCode);
-		buildBitMapFromTree(storagePtr, currentRootPtr->right, newBitArray);
+		buildBitMap(storagePtr, currentRootPtr->left, currentCode);
+		buildBitMap(storagePtr, currentRootPtr->right, newBitArray);
 	}
 	else {
 		storagePtr[currentRootPtr->symbol] = currentCode;
 	}
 }
 
-void pushBitToBitArray(TBitArray* Array, int toPush) {
-	if (Array->bitCount % 8 == 0) {
-		Array->storage = (unsigned char*)realloc(Array->storage, Array->bitCount / 8 + 1);
-	}
-	char mask = ((unsigned char)1) << (Array->bitCount % 8);
-	if (toPush == 0) {
-		Array->storage[Array->bitCount / 8] &= (~mask);
-	}
-	else {
-		Array->storage[Array->bitCount / 8] |= mask;
-	}
-	++(Array->bitCount);
-}
-
-int popBitFromBitArray(TBitArray* array) {
-	if (array->bitCount == 0) {
-		return 0;
-	}
-	--(array->bitCount);
-	int result = (array->storage[array->bitCount / 8] & ((unsigned char)1 << (7 - (array->bitCount % 8))) ? 1 : 0);
-	if (array->bitCount % 8 == 0) {
-		array->storage = (unsigned char*)realloc(array->storage, array->bitCount / 8);
-	}
-	return result;
-}
-
-void pushBitsToOutputStream(FILE* fileOutput, TBitArray* buffer, TBitArray* toPush) {
-	*(buffer->storage) &= ((unsigned char)(~((unsigned char)0))) >> (8 - buffer->bitCount); /////////////
-	int writeCount = (buffer->bitCount + toPush->bitCount) / 8;
-	for (int i = 0; i < writeCount; ++i) {
-		*(buffer->storage) |= toPush->storage[i] << (buffer->bitCount);
-		fwrite(buffer->storage, sizeof(unsigned char), 1, fileOutput);
-		if (ctrl == 0) {
-			ctrl = 1;
-			fb = cloneBitArray(buffer);
-		}
-		*(buffer->storage) &= (unsigned char)0;
-		*(buffer->storage) |= toPush->storage[i] >> (8 - buffer->bitCount); //////////////
-	}
-	if (writeCount * 8<(toPush->bitCount)) {
-		*(buffer->storage) |= (toPush->storage[writeCount] << buffer->bitCount);
-	}
-	buffer->bitCount = (buffer->bitCount + toPush->bitCount) % 8;
-}
-
-int takeBitFromInputStream(FILE* fileInput, TBitArray* buffer) {
-	if (buffer->bitCount == 0) {
-		buffer->storage = (unsigned char*)realloc(buffer->storage, sizeof(unsigned char));
-		fread(buffer->storage, sizeof(unsigned char), 1, fileInput);
-		--bytesLeft;
-		buffer->bitCount = 8;
-	}
-	return popBitFromBitArray(buffer);
-}
-
 TBitArray* encodeTree(TTreeNode* rootPtr) {
-	TBitArray* result = (TBitArray*)malloc(sizeof(TBitArray));
+	TBitArray* result = (TBitArray*)safeMalloc(sizeof(TBitArray));
 	result->bitCount = 0;
 	result->storage = NULL;
 
-	TTreeNodeQueue* queue = (TTreeNodeQueue*)malloc(sizeof(TTreeNodeQueue));
+	TTreeNodeQueue* queue = (TTreeNodeQueue*)safeMalloc(sizeof(TTreeNodeQueue));
 	queue->head = NULL;
 	queue->tail = NULL;
 	pushTreeNodeToQueue(rootPtr, queue);
@@ -237,17 +218,118 @@ TBitArray* encodeTree(TTreeNode* rootPtr) {
 			pushBitToBitArray(result, 0);
 			for (int i = 0; i < 8; ++i) {
 				unsigned char mask = (unsigned char)1 << i;
-				if ((currentNodePtr->symbol & mask) == 0) {
-					pushBitToBitArray(result, 0);
-				}
-				else {
-					pushBitToBitArray(result, 1);
-				}
+				pushBitToBitArray(result, (currentNodePtr->symbol & mask) ? 1 : 0);
 			}
 		}
 	}
+
 	free(queue);
 	return result;
+}
+
+TTreeNode* decodeTree(FILE* inputStream, TBitArray* currentBuffer) {
+	TTreeNode* root = (TTreeNode*)safeMalloc(sizeof(TTreeNode));
+	root->left = NULL;
+	root->right = NULL;
+
+	TTreeNodeQueue* queue = (TTreeNodeQueue*)safeMalloc(sizeof(TTreeNodeQueue));
+	queue->head = NULL;
+	queue->tail = NULL;
+
+	pushTreeNodeToQueue(root, queue);
+	for (TTreeNode* currentTreeNodePtr; queue->head != NULL;) {
+		currentTreeNodePtr = popTreeNodeFromQueue(queue);
+		if (takeBitFromInputStream(inputStream, currentBuffer) == 1) {
+			currentTreeNodePtr->left = (TTreeNode*)safeMalloc(sizeof(TTreeNode));
+			currentTreeNodePtr->left->left = NULL;
+			currentTreeNodePtr->left->right = NULL;
+			currentTreeNodePtr->right = (TTreeNode*)safeMalloc(sizeof(TTreeNode));
+			currentTreeNodePtr->right->left = NULL;
+			currentTreeNodePtr->right->right = NULL;
+			pushTreeNodeToQueue(currentTreeNodePtr->left, queue);
+			pushTreeNodeToQueue(currentTreeNodePtr->right, queue);
+		}
+		else {
+			currentTreeNodePtr->symbol = takeByteFromInputStream(inputStream, currentBuffer);
+		}
+	}
+
+	free(queue);
+	return root;
+}
+
+TBitArray* fb = NULL;
+int ctrl = 0;
+
+TBitArray* cloneBitArray(const TBitArray* original) {
+	TBitArray* newBitArray = (TBitArray*)safeMalloc(sizeof(TBitArray));
+	newBitArray->bitCount = original->bitCount;
+	if (original->bitCount == 0) {
+		newBitArray->storage = NULL;
+		return newBitArray;
+	}
+	int byteCount = ((original->bitCount + 7) / 8);
+	newBitArray->storage = (unsigned char*)safeMalloc(sizeof(unsigned char)*byteCount);
+	for (int i = 0; i < byteCount; ++i) {
+		newBitArray->storage[i] = original->storage[i];
+	}
+	return newBitArray;
+}
+
+void pushBitToBitArray(TBitArray* Array, int toPush) {
+	if (Array->bitCount % 8 == 0) {
+		Array->storage = (unsigned char*)safeRealloc(Array->storage, Array->bitCount / 8 + 1);
+	}
+	unsigned char mask = ((unsigned char)1) << (Array->bitCount % 8);
+	if (toPush == 0) {
+		Array->storage[Array->bitCount / 8] &= (~mask);
+	}
+	else {
+		Array->storage[Array->bitCount / 8] |= mask;
+	}
+	++(Array->bitCount);
+}
+
+int popBitFromBitArray(TBitArray* array) {
+	if (array->bitCount == 0) {
+		return 0;
+	}
+	--(array->bitCount);
+	unsigned char mask = (unsigned char)1 << (7 - (array->bitCount % 8));
+	int result = (array->storage[array->bitCount / 8] & mask) ? 1 : 0;
+	if (array->bitCount % 8 == 0) {
+		array->storage = (unsigned char*)safeRealloc(array->storage, array->bitCount / 8);
+	}
+	return result;
+}
+
+void pushBitsToOutputStream(FILE* fileOutput, TBitArray* buffer, TBitArray* toPush) {
+	*(buffer->storage) &= uCharOnes >> (8 - buffer->bitCount);
+	int writeCount = (buffer->bitCount + toPush->bitCount) / 8;
+	for (int i = 0; i < writeCount; ++i) {
+		*(buffer->storage) |= toPush->storage[i] << (buffer->bitCount);
+		fwrite(buffer->storage, sizeof(unsigned char), 1, fileOutput);
+		if (ctrl == 0) {
+			ctrl = 1;
+			fb = cloneBitArray(buffer);
+		}
+		*(buffer->storage) &= uCharZeroes;
+		*(buffer->storage) |= toPush->storage[i] >> (8 - buffer->bitCount);
+	}
+	if (writeCount * 8<(toPush->bitCount)) {
+		*(buffer->storage) |= (toPush->storage[writeCount] << buffer->bitCount);
+	}
+	buffer->bitCount = (buffer->bitCount + toPush->bitCount) % 8;
+}
+
+int takeBitFromInputStream(FILE* fileInput, TBitArray* buffer) {
+	if (buffer->bitCount == 0) {
+		buffer->storage = (unsigned char*)safeRealloc(buffer->storage, sizeof(unsigned char));
+		fread(buffer->storage, sizeof(unsigned char), 1, fileInput);
+		--bytesLeft;
+		buffer->bitCount = 8;
+	}
+	return popBitFromBitArray(buffer);
 }
 
 void flushOutputBitStream(FILE* fileOutput, TBitArray* buffer) {
@@ -267,6 +349,34 @@ void flushOutputBitStream(FILE* fileOutput, TBitArray* buffer) {
 	firstByte |= paddingSize;
 	rewind(fileOutput);
 	fwrite(&firstByte, sizeof(unsigned char), 1, fileOutput);
+}
+
+unsigned char takeByteFromInputStream(FILE* inputStream, TBitArray* buffer) {
+	unsigned char result = 0;
+	for (int i = 0; i < 8; ++i) {
+		if (takeBitFromInputStream(inputStream, buffer)) {
+			result |= ((unsigned char)1 << i);
+		}
+	}
+	return result;
+}
+
+unsigned char decodeCharFromInputStream(FILE* fileInput, TBitArray* buffer, TTreeNode* root) {
+	if (root->left == NULL) {
+		takeBitFromInputStream(fileInput, buffer);
+		return root->symbol;
+	}
+
+	TTreeNode* currentNode = root;
+	while (currentNode->left != NULL) {
+		if (takeBitFromInputStream(fileInput, buffer) != 0) {
+			currentNode = currentNode->left;
+		}
+		else {
+			currentNode = currentNode->right;
+		}
+	}
+	return currentNode->symbol;
 }
 
 void compress(TTreeNode* rootPtr, TBitArray** bitMapPtrArray, FILE* fileInput, FILE* fileOutput) {
@@ -289,61 +399,6 @@ void compress(TTreeNode* rootPtr, TBitArray** bitMapPtrArray, FILE* fileInput, F
 	flushOutputBitStream(fileOutput, buffer);
 	free(buffer->storage);
 	free(buffer);
-}
-
-unsigned char takeByteFromInputStream(FILE* inputStream, TBitArray* buffer) {
-	unsigned char result = 0;
-	for (int i = 0; i < 8; ++i) {
-		if (takeBitFromInputStream(inputStream, buffer)) {
-			result |= ((unsigned char)1 << i);
-		}
-	}
-	return result;
-}
-
-TTreeNode* decodeTree(FILE* inputStream, TBitArray* currentBuffer) {
-	TTreeNode* root = (TTreeNode*)malloc(sizeof(TTreeNode));
-	root->left = NULL;
-	root->right = NULL;
-	TTreeNodeQueue* queue = (TTreeNodeQueue*)malloc(sizeof(TTreeNodeQueue));
-	queue->head = NULL;
-	queue->tail = NULL;
-	pushTreeNodeToQueue(root, queue);
-	for (TTreeNode* currentTreeNodePtr; queue->head != NULL;) {
-		currentTreeNodePtr = popTreeNodeFromQueue(queue);
-		if (takeBitFromInputStream(inputStream, currentBuffer)) {
-			currentTreeNodePtr->left = (TTreeNode*)malloc(sizeof(TTreeNode));
-			currentTreeNodePtr->left->left = NULL;
-			currentTreeNodePtr->left->right = NULL;
-			currentTreeNodePtr->right = (TTreeNode*)malloc(sizeof(TTreeNode));
-			currentTreeNodePtr->right->left = NULL;
-			currentTreeNodePtr->right->right = NULL;
-			pushTreeNodeToQueue(currentTreeNodePtr->left, queue);
-			pushTreeNodeToQueue(currentTreeNodePtr->right, queue);
-		}
-		else {
-			currentTreeNodePtr->symbol = takeByteFromInputStream(inputStream, currentBuffer);
-		}
-	}
-	return root;
-}
-
-unsigned char decodeCharFromInputStream(FILE* fileInput, TBitArray* buffer, TTreeNode* root) {
-	if (root->left == NULL) {
-		takeBitFromInputStream(fileInput, buffer);
-		return root->symbol;
-	}
-
-	TTreeNode* currentNode = root;
-	while (currentNode->left != NULL) {
-		if (takeBitFromInputStream(fileInput, buffer) != 0) {
-			currentNode = currentNode->left;
-		}
-		else {
-			currentNode = currentNode->right;
-		}
-	}
-	return currentNode->symbol;
 }
 
 void decompress(FILE* fileInput, FILE* fileOutput) {
@@ -377,13 +432,13 @@ int main() {
 			++(charStat[currentSymbol]);
 		}
 
-		TTreeNode* treeRootPtr = getTreeRootPtr(charStat);
+		TTreeNode* treeRootPtr = buildTree(charStat);
 		TBitArray** bitMapPtrArray = (TBitArray**)calloc(256, sizeof(TBitArray*));
 		TBitArray* initialCode = (TBitArray*)malloc(sizeof(TBitArray));
 		initialCode->bitCount = 0;
 		initialCode->storage = NULL;
 		if (treeRootPtr->left != NULL) {
-			buildBitMapFromTree(bitMapPtrArray, treeRootPtr, initialCode);
+			buildBitMap(bitMapPtrArray, treeRootPtr, initialCode);
 		}
 		else {
 			pushBitToBitArray(initialCode, 1);
