@@ -82,7 +82,7 @@ void rightplace(textline *text) {
 		}
 	}
 }
-tree *treecreate(textline *text) {
+textline *treecreate(textline *text) {
 	while (issolotext(text) == 1) {
 		tree *tmp = (tree*)malloc(sizeof(tree));
 		textline *text1 = (textline*)malloc(sizeof(textline));
@@ -105,7 +105,7 @@ tree *treecreate(textline *text) {
 		text = text1;
 		rightplace(text);
 	}
-	return (text->root);
+	return text;
 }
 int findsymbol(tree *root, char sym, int *counter, int array[]) {
 	int l_res = 1, r_res = 1;
@@ -241,7 +241,8 @@ void zip(FILE *fin, FILE *fout) {
 			text = push(text, max, ch);
 			max = searchformax(alph, 256, &maxchar);
 		}
-		tree *treePtr = treecreate(text);
+		text = treecreate(text);
+		tree *treePtr = text->root;
 		unsigned char ch = 0;
 		int counter = 0;
 		int z = ftell(fout);
@@ -366,7 +367,7 @@ void unzip(FILE *in, FILE *out) {
 		textdecode(root, out, in);
 		fprintf(stderr, "\n");
 	}
-	freetree(root);
+	//freetree(root);
 }
 int main() {
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
