@@ -482,8 +482,12 @@ int main() {
 	}
 
 exit:
-	fclose(fileInput.fileStream);
-	fclose(fileOutput.fileStream);
+	if (fileInput.fileStream != NULL) {
+		fclose(fileInput.fileStream);
+	}
+	if (fileOutput.fileStream != NULL) {
+		fclose(fileOutput.fileStream);
+	}
 	destructBitArray(fileInput.firstByte);
 	destructBitArray(fileOutput.firstByte);
 
