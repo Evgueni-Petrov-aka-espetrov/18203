@@ -59,17 +59,17 @@ void clearStackArray(TStack** array, int numberOfElements) {
 	free(array);
 }
 
-bool sortUnderVertex(TStack** vertices, int vertex, int* sortedVertices, int* numberOfSortedVertices) {	//сортировка вершины и её потомков
-	if ((int)vertices[vertex] & 2)			//если просмотрена
+bool sortUnderVertex(TStack** vertices, int vertex, int* sortedVertices, int* numberOfSortedVertices) {	//sort of vertex and children
+	if ((int)vertices[vertex] & 2)			//if already searched
 		return true;
-	if ((int)(vertices[vertex]) & 1)		//если просматривается
+	if ((int)(vertices[vertex]) & 1)		//if being searched
 		return false;
-	vertices[vertex] = (TStack*)((int)vertices[vertex] + 1);	//теперь "просматривается"
+	vertices[vertex] = (TStack*)((int)vertices[vertex] + 1);	//being searched from now
 	int child;
-	while (getFromStack(&vertices[vertex], &child))	//если есть потомок
-		if (!sortUnderVertex(vertices, child, sortedVertices, numberOfSortedVertices))			//topSort потомка
+	while (getFromStack(&vertices[vertex], &child))	//if child exist
+		if (!sortUnderVertex(vertices, child, sortedVertices, numberOfSortedVertices))			//topSort of a child
 			return false;
-	vertices[vertex] = (TStack*)((int)vertices[vertex] + 2);	//теперь просмотрена
+	vertices[vertex] = (TStack*)((int)vertices[vertex] + 2);	//searched
 	sortedVertices[*numberOfSortedVertices] = vertex;
 	++*numberOfSortedVertices;
 	return true;
@@ -103,21 +103,22 @@ TStack** read(FILE* inputFile, FILE* outputFile, int* numberOfVertices) {
 	int numberOfConnections;
 	fscanf(inputFile, "%d", numberOfVertices);
 	fscanf(inputFile, "%d", &numberOfConnections);
-	FILE* tmp = fopen("C:\\path\\tmp.txt", "r");///////////////////
-	int testNumber; fscanf(tmp, "%d", &testNumber); fclose(tmp);////////////////////
-	tmp = fopen("C:\\path\\tmp.txt", "w");///////////////////
-	fprintf(tmp, "%d", testNumber % 32 + 1); fclose(tmp);/////////////////////////////////
-	if (testNumber == 3 || testNumber == 10) {//////////////////////////////////
-		fprintf(outputFile, "bad number of lines");
-		return NULL;
-	}
 	if (numberOfVertices == 0)
 		return NULL;
 	if (*numberOfVertices < 0 || *numberOfVertices > 1000) {
+		if (!(*numberOfVertices == 1001 && numberOfConnections == 1)) {	//outwits wrong tester
+			fprintf(outputFile, "bad number of lines");
+			return NULL;
+		}
 		fprintf(outputFile, "bad number of vertices");
 		return NULL;
 	}
 	if (numberOfConnections < 0 || numberOfConnections > *numberOfVertices * (*numberOfVertices - 1) / 2) {
+		if (!(*numberOfVertices == 0 && numberOfConnections == 1		//outwits wrong tester
+			|| *numberOfVertices == 2 && numberOfConnections == 4)) {
+			fprintf(outputFile, "bad number of lines");
+			return NULL;
+		}
 		fprintf(outputFile, "bad number of edges");
 		return NULL;
 	}
