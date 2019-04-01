@@ -76,6 +76,8 @@ node* insert(node* tree, int val) {
 }
 
 void freeTree(node* tree) {
+	if (!tree)
+		return;
 	if (tree->left)
 		freeTree(tree->left);
 	if (tree->right)
