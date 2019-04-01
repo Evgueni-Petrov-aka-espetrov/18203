@@ -30,7 +30,6 @@ void check_bads(const bads is_anything_bad, FILE *fout) {
 }
 
 struct edge {
-	//int edge_start;
 	int edge_end;
 	int lenth;
 	struct edge* next_edge;
@@ -46,7 +45,24 @@ struct edge_head_list{
 	struct edge_head_list* next;
 	struct edge_head* head;
 };
+struct allocated_edge_memory{
+	struct edge* memory;
+	int used_memory_cells;
+};
+struct allocated_edge_head_memory{
+	struct edge_head* memory;
+	int used_memory_cells;
+};
+struct allocated_edge_head_list_memory{
+	struct edge_head_list* memory;
+	int used_memory_cells;
+};
 
+struct edge* my_edge_malloc(struct allocated_edge_memory* my_edge_memory){
+	struct edge* my_edge= &(my_edge_memory->memory[my_edge_memory->used_memory_cells]);
+	my_edge_memory->used_memory_cells++;
+	return my_edge;
+}
 struct edge_head* create_edge_head(int vertex){
 	struct edge_head* head = malloc(sizeof(struct edge_head));
 	head->vertex = vertex;
@@ -56,9 +72,9 @@ struct edge_head* create_edge_head(int vertex){
 	head->are_there_many_long_pathes = false;
 	return head;
 }
-struct edge* create_edge(int start,int end, int lenth) {
-	struct edge* new_edge = (struct edge*) malloc(sizeof(struct edge));
-	//new_edge->edge_start = start;
+
+struct edge* create_edge(int start, int end, int lenth, struct allocated_edge_memory* my_edge_memory) {
+	struct edge* new_edge = my_edge_malloc(my_edge_memory);
 	new_edge->edge_end = end;
 	new_edge->lenth = lenth;
 	new_edge->next_edge = NULL;
@@ -157,21 +173,21 @@ void put_edge_in_array(struct edge_head** edges, struct edge* new_edge, int edge
 		edges[edge_start]->next_edge = new_edge;
 		new_edge->next_edge = current_edge;
 }
-bads get_edges(const FILE *fin, const int number_of_edges, const int number_of_vertices, struct edge** edges) {
+bads get_edges(const FILE *fin, const int number_of_edges, const int number_of_vertices, struct edge** edges, struct allocated_edge_memory* my_edge_memory) {
 	int EOF_checker = 0, first_vertex = 0,second_vertex=0,edge_lenth=0;
 	for (int i = 0; i < number_of_edges; i++) {
-		EOF_checker = fscanf(fin, "%d", &first_vertex);
-		if (EOF_checker == EOF) {
+		EOF_checker = fscanf(fin, "%d%d%d", &first_vertex,&second_vertex, &edge_lenth);
+		if (EOF_checker == EOF || EOF_checker<3) {
 			return bad_number_of_lines;
 		}
-		EOF_checker = fscanf(fin, "%d", &second_vertex);
+		/*EOF_checker = fscanf(fin, "%d", &second_vertex);
 		if (EOF_checker == EOF) {
 			return bad_number_of_lines;
 		}
 		EOF_checker = fscanf(fin, "%d", &edge_lenth);
 		if (EOF_checker == EOF) {
 			return bad_number_of_lines;
-		}
+		}*/
 		if (first_vertex<1 || first_vertex>number_of_vertices || second_vertex<1 || second_vertex>number_of_vertices) {
 			return bad_vertex;
 		}
@@ -179,27 +195,9 @@ bads get_edges(const FILE *fin, const int number_of_edges, const int number_of_v
 			return bad_length;
 		}
 		if (first_vertex != second_vertex) {
-			struct edge* new_fs_edge = (struct edge*) malloc(sizeof(struct edge));
-			/*//new_fs_edge->edge_start = first_vertex;
-			new_fs_edge->edge_end = second_vertex;
-			new_fs_edge->lenth = edge_lenth;
-			new_fs_edge->next_edge = NULL;
-
-			struct edge* new_sf_edge = (struct edge*) malloc(sizeof(struct edge));
-			//new_sf_edge->edge_start = second_vertex;
-			new_sf_edge->edge_end = first_vertex;
-			new_sf_edge->lenth = edge_lenth;
-			new_sf_edge->next_edge = NULL;
-
-			struct edge* buff_edge = edges[first_vertex]->next_edge;
-			edges[first_vertex]->next_edge = new_fs_edge;
-			new_fs_edge->next_edge = buff_edge;
-
-			buff_edge = edges[second_vertex]->next_edge;
-			edges[second_vertex]->next_edge = new_fs_edge;
-			new_fs_edge->next_edge = buff_edge;*/
-			put_edge_in_array(edges, create_edge(second_vertex, first_vertex, edge_lenth), second_vertex);
-			put_edge_in_array(edges, create_edge(first_vertex, second_vertex, edge_lenth), first_vertex);
+			
+			put_edge_in_array(edges, create_edge(second_vertex, first_vertex, edge_lenth, my_edge_memory), second_vertex);
+			put_edge_in_array(edges, create_edge(first_vertex, second_vertex, edge_lenth, my_edge_memory), first_vertex);
 		}
 	}
 	return not_bad;
@@ -257,7 +255,6 @@ void create_path(struct edge_head_list* list_of_edge_head, bool* is_vertice_chec
 				process_edge(edges, processing_edge, processing_edge_head->vertex);
 				list_of_edge_head = insert_edge_head_in_list(list_of_edge_head, edges[processing_edge->edge_end]);
 			}
-			//free(processing_edge);
 			processing_edge = pop_edge_from_edge_head(processing_edge_head);
 		}
 		is_vertice_checked[processing_edge_head->vertex]=true;
@@ -320,7 +317,14 @@ int main() {
 	edges[starting_vertex]->path_lenth = 0;
 	edges[starting_vertex]->previous_vertex = edges[starting_vertex];
 	
-	is_anything_bad = get_edges(fin, number_of_edges, number_of_vertices, edges);
+	struct edge* edge_memory = malloc((number_of_edges+1)*2*sizeof(struct edge));
+	struct allocated_edge_memory* my_edge_memory = malloc(sizeof(struct allocated_edge_memory)); 
+	my_edge_memory->memory = edge_memory;
+	my_edge_memory->used_memory_cells = 0;
+
+	//struct edge_head* edge_head_memory = 
+
+	is_anything_bad = get_edges(fin, number_of_edges, number_of_vertices, edges,my_edge_memory);
 	check_bads(is_anything_bad,fout);
 	bool*is_vertice_checked = (bool*)malloc((number_of_vertices+1)*sizeof(bool));
 	for (int i = 1; i < number_of_vertices + 1; i++) {
