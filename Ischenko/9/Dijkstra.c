@@ -182,7 +182,6 @@ int get_number_of_edges( FILE *fin, const int number_of_vertices, bads *is_anyth
 }
 void put_edge_in_array(struct edge_head** edges, struct edge* new_edge, int edge_start) {
 	struct edge* current_edge = edges[edge_start]->next_edge;
-
 	edges[edge_start]->next_edge = new_edge;
 	new_edge->next_edge = current_edge;
 }
@@ -193,14 +192,6 @@ bads get_edges( FILE *fin, const int number_of_edges, const int number_of_vertic
 		if (EOF_checker == EOF || EOF_checker < 3) {
 			return bad_number_of_lines;
 		}
-		/*EOF_checker = fscanf(fin, "%d", &second_vertex);
-		if (EOF_checker == EOF) {
-			return bad_number_of_lines;
-		}
-		EOF_checker = fscanf(fin, "%d", &edge_lenth);
-		if (EOF_checker == EOF) {
-			return bad_number_of_lines;
-		}*/
 		if (first_vertex<1 || first_vertex>number_of_vertices || second_vertex<1 || second_vertex>number_of_vertices) {
 			return bad_vertex;
 		}
@@ -216,10 +207,6 @@ bads get_edges( FILE *fin, const int number_of_edges, const int number_of_vertic
 	return not_bad;
 }
 
-/*edge_head->path_lenth :	>=0 äëèíà ïóòè
-							-1 ïóòè íåò
-							-2 ïóòü áîëüøå INT_MAX
-*/
 void process_edge(struct edge_head** edges, struct edge* processing_edge, int start_vertex) {
 	int edge_end = processing_edge->edge_end;
 	int edge_lenth = processing_edge->lenth;
