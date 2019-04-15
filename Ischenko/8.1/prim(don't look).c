@@ -34,15 +34,14 @@ void create_smallest_frame(int*edges, int*distance_to_frame, bool*is_verterx_in_
 		fprintf(fout, "%d %d\n", i + 1, new_frame_vertex);
 		relax_distance(edges, distance_to_frame, new_frame_vertex, number_of_vertices, is_verterx_in_frame);
 	}
-
 }
 
 int main(){
 
 	int number_of_vertices = 0, number_of_edges = 0;
-	//получение данных
+	//ГЇГ®Г«ГіГ·ГҐГ­ГЁГҐ Г¤Г Г­Г­Г»Гµ
 	int * edges = malloc(number_of_vertices*number_of_vertices*sizeof(int));
-	//заполнение
+	//Г§Г ГЇГ®Г«Г­ГҐГ­ГЁГҐ
 	int *distance_to_frame = malloc(number_of_vertices*2*sizeof(int));
 	distance_to_frame[0] = 0;
 	distance_to_frame[number_of_vertices] = 1;
@@ -55,6 +54,10 @@ int main(){
 	for (int i = 1; i < number_of_vertices; i++){
 		is_vertex_in_frame[i] = false;
 	}
-
-
+	
+	free(edges);
+	free(distance_to_frame);
+	free(is_vertex_in_frame);
+	fclose(fin);
+	fclose(fout);
 }
