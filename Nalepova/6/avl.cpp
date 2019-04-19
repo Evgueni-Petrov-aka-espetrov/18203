@@ -9,7 +9,6 @@ typedef struct tree
 	int height;
 	int data;
 }tree;
-
 int GetHeight(tree * p)
 {
 	if (p != NULL)
@@ -17,11 +16,8 @@ int GetHeight(tree * p)
 	else
 		return 0;
 }
-
 void FixHeight(tree * p)
 {
-
-
 	if (GetHeight(p->right) >= GetHeight(p->left))
 	{
 		p->height = GetHeight(p->right) + 1;
@@ -30,9 +26,7 @@ void FixHeight(tree * p)
 	{
 		p->height = GetHeight(p->left) + 1;
 	}
-
 }
-
 tree * CreateNode(int key)
 {
 	tree * p = (tree*)malloc(sizeof(tree));
@@ -42,7 +36,6 @@ tree * CreateNode(int key)
 	p->data = key;
 	return p;
 }
-
 void DeleteNode(tree * p)
 {
 	if (p->left != NULL)
@@ -51,7 +44,6 @@ void DeleteNode(tree * p)
 		DeleteNode(p->right);
 	free(p);
 }
-
 tree * LeftRotation(tree * p)
 {
 	tree * q = p->right;
@@ -103,7 +95,6 @@ tree * Balance(tree * p)
 	}
 	return p;
 }
-
 tree * InsertNode(tree * p, int key)
 {
 	if (p == NULL)
@@ -119,22 +110,19 @@ tree * InsertNode(tree * p, int key)
 	}
 	return Balance(p);
 }
-
 int main()
 {
 	FILE *out, *in;
-
 	in = fopen("in.txt", "r");
 	out = fopen("out.txt", "w");
 	tree * p = NULL;
-
 	int amountOfTops;
 	fscanf(in,"%d", &amountOfTops);
+	
 	if (amountOfTops == 0)
 	{
 		printf("%d", 0);
 		return 0;
-
 	}
 	int temp;
 	for (int i = 0; i < amountOfTops; i++)
@@ -144,7 +132,7 @@ int main()
 	}
 	
 	int h = GetHeight(p);
-	if(p!=NULL)
+	if(p != NULL)
 	{
 		DeleteNode(p);
 		fprintf(out, "%d\n", h);
