@@ -1,0 +1,382 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+char bigbuffer[9]; 
+int bbend = 0; 
+
+struct node {
+	struct node *left;
+	struct node *right;
+	struct node *parent;
+	int active;
+	char charachter;
+	int count;
+};
+
+struct node* UnpackTree(FILE*);
+void MakeTable(FILE*, int[]);
+int ArrOptimalSize(int[]);
+int InitTreeArr(struct node *, int[]);
+int BuildTree(struct node *, int);
+int FindMinEl(struct node[], int);
+void encode(char , char *, struct node *); 
+char decode(FILE *, struct node *); 
+char pack(char); 
+void unpack(char , char *); 
+void submit(FILE *, char *);
+void submit1(FILE *, char ); 
+void PackTree(FILE * , struct node *, struct node *);
+void fetch(int , char * , FILE *); 
+char fetch1(FILE*);
+int decodefile();
+void freetree(struct node *);
+
+int main() {
+
+	FILE *huffmanfile;
+	huffmanfile = fopen("in.txt", "rb");
+
+	FILE *zipped;
+	zipped = fopen("out.txt", "wb");
+
+	char buffer[3];
+	fread(&buffer, 1, 3, huffmanfile);
+
+	if (buffer[1] != '\r') {
+
+		return 1;
+	}	
+	if (buffer[2] != '\n') {
+
+		return 1;
+	}
+
+	if (buffer[0] == 'c') {
+
+		codefile(huffmanfile, zipped);
+	}
+	if (buffer[0] == 'd') {
+
+		decodefile(huffmanfile, zipped);
+	}
+
+	fclose(huffmanfile);
+	fclose(zipped);
+	return 0;
+}
+
+int codefile(FILE *huffmanfile, FILE *zippedfile) {
+
+	int huffmantable[256];
+
+	MakeTable(huffmanfile, huffmantable);
+
+	int N = ArrOptimalSize(huffmantable); 
+	struct node *treearr = (struct node *)malloc(sizeof(struct node) * N); 
+	int end = InitTreeArr(treearr, huffmantable);
+	int symbolcount = end;
+
+	end = BuildTree(treearr, end);
+
+	char *buffer = (char *)malloc(symbolcount); 
+	unsigned char recordscount = symbolcount;
+
+	fseek(huffmanfile, 0, SEEK_END);
+	size_t datasize = ftell(huffmanfile) - 3;
+	fwrite(&datasize, sizeof(size_t), 1, zippedfile);
+	fseek(huffmanfile, 3, SEEK_SET);
+
+	PackTree(zippedfile, treearr, &treearr[end - 1]);
+
+	char charachter;
+	while (fscanf(huffmanfile, "%c", &charachter) > 0) {
+
+		encode(charachter, buffer, treearr); 
+		submit(zippedfile, buffer); 
+	}
+
+	if (bbend != 0) { 
+
+		char flushbyte = pack(bigbuffer);
+		fwrite(&flushbyte, 1, 1, zippedfile);
+	}
+	
+	free(treearr);
+	return 0;
+}
+
+
+void MakeTable(FILE *huffmanfile, int huffmantable[]) { 
+
+	memset(huffmantable, 0, sizeof(int) * 256);
+	unsigned char currchar = 0;
+
+	while (!feof(huffmanfile)) { 
+		fscanf(huffmanfile, "%c", &currchar);
+		huffmantable[currchar]++;
+	}
+}
+
+int ArrOptimalSize(int huffmantable[256]) {
+
+	int N = 0;
+	for (int i = 0; i < 256; i++) {
+		if (huffmantable[i] != 0) {
+			N++;
+		}
+	}
+	N = 2 * N - 1;
+	return N;
+}
+
+int InitTreeArr(struct node *treearr, int huffmantable[]) {
+
+	int end = 0;
+	for (int i = 0; i < 256; i++) {
+		if (huffmantable[i] != 0) {
+			treearr[end].count = huffmantable[i];
+			treearr[end].charachter = (char)i;
+			treearr[end].left = NULL;
+			treearr[end].right = NULL;
+			treearr[end].parent = NULL;
+			treearr[end].active = 1;
+
+			end++; 
+		}
+	}
+	return end; 
+}
+
+int BuildTree(struct node *treearr, int end) {
+
+	int symbolcount = end;
+	for (int i = 0; i < symbolcount - 1; i++) {
+
+		int min1, min2;
+		min1 = FindMinEl(treearr, end);
+		min2 = FindMinEl(treearr, end);
+		treearr[min1].parent = &treearr[end];
+		treearr[min2].parent = &treearr[end];
+		treearr[end].left = &treearr[min1];
+		treearr[end].right = &treearr[min2];
+		treearr[end].parent = NULL;
+		treearr[end].count = treearr[min1].count + treearr[min2].count;
+		treearr[end].active = 1;
+
+		end++;
+	}
+	return end; 
+}
+
+int FindMinEl(struct node *treearr, int end) {
+
+	int currmin = 0;
+	while (treearr[currmin].active == 0) {
+		currmin++;
+	}
+	for (int i = 0; i < end; i++) {
+		if ((treearr[i].count < treearr[currmin].count) && treearr[i].active == 1) {
+			currmin = i;
+		}
+	}
+	treearr[currmin].active = 0;
+
+	return currmin;
+}
+
+void encode(char charachter, char *buffer, struct node *treearr) {
+
+	int i = 0;
+	while (treearr[i].charachter != charachter) {
+		i++;
+	}
+
+	struct node *ptr = &treearr[i];
+
+	int currpos = 0;
+	while (ptr->parent != NULL) {
+
+		if (ptr == ptr->parent->left) {
+			buffer[currpos] = '0';
+			currpos++;
+		}
+		if (ptr == ptr->parent->right) {
+			buffer[currpos] = '1';
+			currpos++;
+		}
+
+		ptr = ptr->parent;
+	}
+	buffer[currpos] = '\0';
+
+	for (int i = 0; i < currpos / 2; i++) {
+		char tmp;
+		tmp = buffer[i];
+		buffer[i] = buffer[currpos - 1 - i];
+		buffer[currpos - 1 - i] = tmp;
+	}
+}
+
+void unpack(char symbol, char *buffer) {
+
+	unsigned char in = symbol, tmp;
+	for (int i = 0; i < 8; i++)
+	{
+		tmp = in % 2;
+		if (tmp == 0) {
+			buffer[i] = '0';
+		}
+		if (tmp == 1) {
+			buffer[i] = '1';
+		}
+		in = in / 2;
+	}
+	buffer[8] = '\0';
+}
+
+char pack(char buffer[]) {
+
+	unsigned char x = 0;
+	for (int i = 0; i < 8; i++) {
+		if (buffer[7 - i] == '1') {
+			x++;
+		}
+		if (i < 7) {
+			x = x << 1;
+		}
+	}
+	buffer[8] = '\0';
+	return x;
+}
+
+void submit(FILE* zippedfile, char *buffer) {
+	for (int i = 0; i < (int)strlen(buffer); i++) {
+		submit1(zippedfile, buffer[i]);
+	}
+}
+
+void submit1(FILE* zippedfile, char currentbyte) {
+
+	bigbuffer[bbend] = currentbyte;
+	bbend++;
+	bigbuffer[bbend] = '\0';
+	if (bbend == 8) {
+		char packedbyte = pack(bigbuffer);
+		fwrite(&packedbyte, 1, 1, zippedfile);
+		bbend = 0;
+	}
+}
+
+void PackTree(FILE* zippedfile, struct node *treearr, struct node *n) {
+
+	char buffer[9];
+
+	if (n->left != NULL) {
+		submit(zippedfile, "0"); 
+		PackTree(zippedfile, treearr, n->left);
+	}
+	else
+	{
+		submit(zippedfile, "1");
+		unpack(n->charachter, buffer);
+		submit(zippedfile, buffer);
+	}
+
+	if (n->right != NULL) {
+		PackTree(zippedfile, treearr, n->right);
+	}
+}
+
+int decodefile(FILE *zipped, FILE *unzipped) {
+
+	if (zipped == NULL) {
+		return 1;
+	}
+
+	size_t datasize;
+	fread(&datasize, sizeof(size_t), 1, zipped);
+
+	bbend = 8;
+
+	struct node *root = UnpackTree(zipped);
+
+	char symbol;
+
+	for (int i = 0; i < (int)datasize; i++) {
+		symbol = decode(zipped, root);
+		fwrite(&symbol, 1, 1, unzipped);
+	}
+
+	freetree(root);
+	return 0;
+}
+
+struct node* UnpackTree(FILE* zipped) {
+
+	char buf[9];
+	if (fetch1(zipped) == '0') {
+
+		struct node *node = (struct node*)malloc(sizeof(struct node));
+
+		node->left = UnpackTree(zipped);
+		node->right = UnpackTree(zipped);
+
+		return node;
+	}
+	else
+	{
+		fetch(8, buf, zipped);
+		struct node *leaf = (struct node*)malloc(sizeof(struct node));
+		leaf->charachter = pack(buf);
+		leaf->left = NULL;
+		leaf->right = NULL;
+		return leaf;
+	}
+}
+
+void fetch(int bits_count, char* buf, FILE *zipped) { 
+
+	for (int i = 0; i < bits_count; i++) {
+
+		buf[i] = fetch1(zipped);
+	}
+	buf[bits_count] = '\0';
+}
+
+char fetch1(FILE* zipped) { 
+
+	char tmp;
+	if (bbend >= 8) {
+
+		fread(&tmp, 1, 1, zipped);
+		unpack(tmp, bigbuffer);
+		bbend = 0;
+	}
+	return bigbuffer[bbend++]; 
+}
+
+char decode(FILE *zipped, struct node *root) {
+
+	while (root->left != NULL) {
+
+		if (fetch1(zipped) == '0') {
+			root = root->left;
+		}
+		else
+		{
+			root = root->right;
+		}
+	}
+	return root->charachter;
+}
+
+void freetree(struct node *root) {
+
+	if (root != NULL) {
+		freetree(root->right);
+		freetree(root->left);
+		free(root);
+	}
+}
