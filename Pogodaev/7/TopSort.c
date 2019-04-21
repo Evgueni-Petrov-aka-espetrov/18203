@@ -3,7 +3,7 @@
 #include <assert.h>
 #include "topsort.h"
 
-typedef enum {white, grey, black} Ñolors;
+typedef enum {white, grey, black} Colors;
 
 void AddVertexToList(int vertexNumber, VerticesList **verticesList) {
 	VerticesList *newListElement = (VerticesList*)malloc(sizeof(VerticesList));
@@ -14,11 +14,11 @@ void AddVertexToList(int vertexNumber, VerticesList **verticesList) {
 }
 
 // returns 1 if graph has a cycle
-int VisitVertex(const VerticesList **adjacentVerticesLists, int vertexNumber, Ñolors *verticesColors, VerticesList **sortedVerticesList) {
+int VisitVertex(const VerticesList **adjacentVerticesLists, int vertexNumber, Colors *verticesColors, VerticesList **sortedVerticesList) {
 	verticesColors[vertexNumber - 1] = grey;
 	const VerticesList *adjacentVertex = adjacentVerticesLists[vertexNumber - 1];
 	for (; adjacentVertex != NULL; adjacentVertex = adjacentVertex->next) {
-		Ñolors adjVertexColor = verticesColors[adjacentVertex->vertexNumber - 1];
+		Colors adjVertexColor = verticesColors[adjacentVertex->vertexNumber - 1];
 		if (adjVertexColor == grey) {
 			return 1;
 		}
@@ -36,7 +36,7 @@ int VisitVertex(const VerticesList **adjacentVerticesLists, int vertexNumber, Ño
 // returns isImpossibleToSort
 int TopSort (const VerticesList **adjacentVerticesLists, int verticesCount, FILE *out) {
 	int IsImpossibleToSort = 0;
-	Ñolors *verticesColors = (Ñolors*)malloc(verticesCount * sizeof(Ñolors));
+	Colors *verticesColors = (Colors*)malloc(verticesCount * sizeof(Colors));
 	assert(verticesColors != NULL);
 	VerticesList *sortedVerticesList = NULL;
 	for (int i = 0; i < verticesCount; ++i) {
