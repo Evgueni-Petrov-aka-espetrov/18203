@@ -103,8 +103,6 @@ TStack** read(FILE* inputFile, FILE* outputFile, int* numberOfVertices) {
 	int numberOfConnections;
 	fscanf(inputFile, "%d", numberOfVertices);
 	fscanf(inputFile, "%d", &numberOfConnections);
-	if (numberOfVertices == 0)
-		return NULL;
 	if (*numberOfVertices < 0 || *numberOfVertices > 1000) {
 		if (!(*numberOfVertices == 1001 && numberOfConnections == 1)) {	//outwits wrong tester
 			fprintf(outputFile, "bad number of lines");
