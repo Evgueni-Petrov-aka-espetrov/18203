@@ -1,5 +1,4 @@
 #define _CRT_SECURE_NO_WARNINGS
-//#define INT_MAX = 10000;
 #include <stdio.h>
 #include <malloc.h>
 #include <assert.h>
@@ -9,7 +8,6 @@ typedef struct list{
 	int to;
 	int from;
 	int length;
-	//struct list* next;
 	char usage;
 } list;
 int readamount(FILE *in){
@@ -28,7 +26,6 @@ int readamount(FILE *in){
 	if (noteof == 0) amount = -1;
 	return amount;
 }
-
 int getgraph(list *graph, FILE *in, int vert, int *res){
 	int minus;
 	int lines = 2;
@@ -46,8 +43,6 @@ int getgraph(list *graph, FILE *in, int vert, int *res){
 			c = fgetc(in);
 		}
 		if (minus == 1) from = from * (-1);
-		//if ((from >= 0) && (from <= vert)) graph[vert*from + from] = 1;
-		//fprintf(stderr, "%d  ", from);
 		c = fgetc(in);
 		minus = 0;
 		while ((c != ' ') && (c != EOF)) {
@@ -56,8 +51,6 @@ int getgraph(list *graph, FILE *in, int vert, int *res){
 			c = fgetc(in);
 		}
 		if (minus == 1) to = to * (-1);
-		//if ((to > 0) && (to <= vert)) graph[vert*to + to] = 1;
-		//fprintf(stderr, "%d  ", to);
 		c = fgetc(in);
 		minus = 0;
 		while ((c != '\n') && (c != EOF)) {
@@ -66,13 +59,9 @@ int getgraph(list *graph, FILE *in, int vert, int *res){
 			c = fgetc(in);
 		}
 		if (minus == 1) len = len * (-1);
-		//fprintf(stderr, " %d ", len);
 		c = fgetc(in);
-
-		//if (from == to) res[0] = -2;
 		if ((from <= vert) && (to <= vert) && (to >= 0) && (from >= 0) && (len >= 0) && (len <= INT_MAX)) {
-			//list *elem = (list*)malloc(sizeof(list));
-			graph[counter].length = len;
+ 			graph[counter].length = len;
 			graph[counter].from = from;
 			graph[counter].to = to;
 			graph[counter].usage = 0;
@@ -84,12 +73,6 @@ int getgraph(list *graph, FILE *in, int vert, int *res){
 			if ((from > vert) || (to > vert) || (to < 0) || (from < 0)) *res = 2;
 		}
 	}
-	//place 1 on diagonal
-	//int i;
-	//for (i = 1; i <= vert; i++){
-	//	graph[vert*i + i] = 1;
-	//}
-
 	if (*res == 0) return lines;
 	else return 0;
 }
@@ -104,11 +87,9 @@ void kruskal(list *graph, int vert, int edges, int *groups, FILE *fout){
 	for (i; i < vert; i++){
 		groups[i] = i;
 	}
-	//printf("%d  ", groups[1]);
 	for (i = 0; i < edges; i++) {
 		int to = graph[i].to;
 		int from = graph[i].from;
-		//printf("%d  ", to);
 		if (groups[to-1] != groups[from-1]) {
 			int j = 0;
 			int was = groups[to - 1];
@@ -116,7 +97,6 @@ void kruskal(list *graph, int vert, int edges, int *groups, FILE *fout){
 			for (j; j < vert; j++){
 				if (groups[j] == was) groups[j] = will;
 			}
-			//fprintf(fout, "%d %d", from, to);
 			graph[i].usage = 1;
 		}
 	}
@@ -125,7 +105,6 @@ void kruskal(list *graph, int vert, int edges, int *groups, FILE *fout){
 	for (i = 1; i < vert; i++){
 		if (groups[i] != value) {
 			difference = 1;
-			//printf("%d %d ", groups[i], i);
 			break;
 		}
 	}
@@ -153,7 +132,6 @@ int main(){
 			int res = 0;
 			int lines = getgraph(graph, fin, vert, &res);
 			int errors = 0;
-			//fprintf(stderr, " %d ", res);
 			if ((res == 2) && (errors == 0)) {
 				errors++;
 				fprintf(fout, "bad vertex");
