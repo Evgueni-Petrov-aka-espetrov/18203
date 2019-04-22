@@ -26,7 +26,6 @@ int readamount(FILE *in){
 	if (noteof == 0) amount = -1;
 	return amount;
 }
-
 int getgraph(list *graph, FILE *in, int vert, int *res){
 	int minus;
 	int lines = 2;
@@ -61,7 +60,6 @@ int getgraph(list *graph, FILE *in, int vert, int *res){
 		}
 		if (minus == 1) len = len * (-1);
 		c = fgetc(in);
-
 		if ((from <= vert) && (to <= vert) && (to >= 0) && (from >= 0) && (len >= 0) && (len <= INT_MAX)) {
 			graph[counter].length = len;
 			graph[counter].from = from;
@@ -89,11 +87,9 @@ void kruskal(list *graph, int vert, int edges, int *groups, FILE *fout){
 	for (i; i < vert; i++){
 		groups[i] = i;
 	}
-	//printf("%d  ", groups[1]);
 	for (i = 0; i < edges; i++) {
 		int to = graph[i].to;
 		int from = graph[i].from;
-		//printf("%d  ", to);
 		if (groups[to - 1] != groups[from - 1]) {
 			int j = 0;
 			int was = groups[to - 1];
