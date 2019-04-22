@@ -93,7 +93,6 @@ Stack* topSort(Graph* graph, int n) {
 		}
 		if (cycle) {
 			printf("impossible to sort");
-			freeGraph(graph, n);
 			freeStack(sortedGraph);
 			return NULL;
 		}
@@ -129,5 +128,6 @@ int main() {
 	if (sortedGraph) {
 		printGraph(sortedGraph);
 	}
+	freeGraph(graph, n);
 	return 0;
 }
