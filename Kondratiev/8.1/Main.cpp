@@ -104,7 +104,7 @@ int main() {
 
 	TGraph* graph = readGraph(inputFile, outputFile, nodeNumber, arcNumber);
 	TEdge* base = findBase(graph, outputFile);
-	if (graph == NULL)
+	if (base == NULL)
 		goto end;
 	printEdgeArray(outputFile, base, graph->numberOfVertices - 1);
 
@@ -166,6 +166,7 @@ TEdge* findBase(TGraph* graph, FILE* errorFile) {
 			free(parentVertices);
 		if (ifVertexAdded != NULL)
 			free(ifVertexAdded);
+		return NULL;
 	}
 	int baseSize = 0;
 	for (int i = graph->numberOfVertices - 1; i >= 0; --i) {
