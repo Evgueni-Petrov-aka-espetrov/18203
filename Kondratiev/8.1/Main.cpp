@@ -3,7 +3,7 @@
 #include <malloc.h>
 #include <limits.h>
 
-enum { MAX_NUMBER_OF_VERTICES = 5000/*, DISCONNECTED = (unsigned int)INT_MAX + 1*/ };
+#define MAX_NUMBER_OF_VERTICES 5000
 #define DISCONNECTED (unsigned int)INT_MAX + 1
 
 int KantorNumber(int number1, int number2);
