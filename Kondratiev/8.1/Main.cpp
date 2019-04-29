@@ -3,7 +3,8 @@
 #include <malloc.h>
 #include <limits.h>
 
-enum { MAX_NUMBER_OF_VERTICES = 5000, DISCONNECTED = INT_MAX + 1 };
+enum { MAX_NUMBER_OF_VERTICES = 5000/*, DISCONNECTED = (unsigned int)INT_MAX + 1*/ };
+#define DISCONNECTED (unsigned int)INT_MAX + 1
 
 int KantorNumber(int number1, int number2);
 
@@ -62,8 +63,8 @@ struct TGraph {
 
 struct TEdge {
 	unsigned int length;
-	unsigned short vertex1;
-	unsigned short vertex2;
+	unsigned int vertex1;
+	unsigned int vertex2;
 };
 
 TGraph* readGraph(FILE* file, FILE* errorFile, unsigned int numberOfVertices, unsigned int numberOfEdges);
@@ -127,7 +128,7 @@ TGraph* readGraph(FILE* file, FILE* errorFile, unsigned int numberOfVertices, un
 
 	unsigned long long length;
 	unsigned int vertex1, vertex2;
-	for (int i = 0; i != numberOfEdges; ++i) {
+	for (unsigned int i = 0; i != numberOfEdges; ++i) {
 		if (fscanf(file, "%d%d%llu", &vertex1, &vertex2, &length) < 3) {
 			fprintf(errorFile, "bad number of lines");
 			goto error;
@@ -140,7 +141,7 @@ TGraph* readGraph(FILE* file, FILE* errorFile, unsigned int numberOfVertices, un
 			fprintf(errorFile, "bad length");
 			goto error;
 		}
-		graph->setLength(vertex1 - 1, vertex2 - 1, length);
+		graph->setLength(vertex1 - 1, vertex2 - 1, (unsigned int)length);
 	}
 	return graph;
 
@@ -168,17 +169,16 @@ TEdge* findBase(TGraph* graph, FILE* errorFile) {
 			free(ifVertexAdded);
 		return NULL;
 	}
-	int baseSize = 0;
 	for (int i = graph->numberOfVertices - 1; i >= 0; --i) {
 		distances[i] = DISCONNECTED;
 		ifVertexAdded[i] = false;
 	}
-	int numberOfAddedEdges = 0;
+	unsigned int numberOfAddedEdges = 0;
 
 	distances[0] = 0;
 	ifVertexAdded[0] = true;
 	updateDistancesAndParentVertices(distances, parentVertices, 0, graph);
-	int newVertex;
+	unsigned int newVertex;
 	while (numberOfAddedEdges != graph->numberOfVertices - 1) {
 		newVertex = nearestNewVertex(distances, ifVertexAdded, graph->numberOfVertices);
 		if (newVertex == -1) {
@@ -215,7 +215,7 @@ int nearestNewVertex(unsigned int* distances, bool* ifVertexAdded, int numberOfV
 }
 
 void updateDistancesAndParentVertices(unsigned int* distances, int* parentVertices, int newVertex, TGraph* graph) {
-	for (int i = 0; i != graph->numberOfVertices; ++i)
+	for (unsigned int i = 0; i != graph->numberOfVertices; ++i)
 		if (graph->getLength(newVertex, i) < distances[i]) {
 			distances[i] = graph->getLength(newVertex, i);
 			parentVertices[i] = newVertex;
