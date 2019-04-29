@@ -35,6 +35,9 @@ int main(){
 		printf("bad number of edges");
 		return 0;
 	}
+	if (N == 1 && M == 0) {
+		return 0;
+	}
 	if (M == 0) {
 		printf("no spanning tree");
 		return 0;
@@ -66,12 +69,12 @@ int main(){
 		parents[i] = i;
 		heights[i] = 0;
 	}
-	TEdge* resultStorage = (TEdge*)malloc(sizeof(TEdge)*M);
-	int storageSize = 0;
+	TEdge** resultStorage = (TEdge**)malloc(sizeof(TEdge*)*(N-1));
+	int resultStorageSize = 0;
 	for (int i = 0; i < M; ++i) {
 		if (findRootIndex(parents, edgeStorage[i].v1-1) != findRootIndex(parents, edgeStorage[i].v2-1)) {
-			resultStorage[storageSize++] = edgeStorage[i];
-			mergeTrees(parents, heights, edgeStorage[i].v1-1, edgeStorage[i].v2-1);
+			resultStorage[resultStorageSize++] = edgeStorage + i;
+			mergeTrees(parents, heights, findRootIndex(parents, edgeStorage[i].v1 - 1), findRootIndex(parents, edgeStorage[i].v2 - 1));
 		}
 	}
 	for (int i = 1; i < N; ++i){
@@ -80,12 +83,13 @@ int main(){
 			return 0;
 		}
 	}
-
-	for (int i = 0; i < storageSize; ++i){
-		printf("%d %d\n", resultStorage[i].v1, resultStorage[i].v2);
+	for (int i = 0; i < resultStorageSize; ++i){
+		printf("%d %d\n", resultStorage[i]->v1, resultStorage[i]->v2);
 	}
 
-
-
+	free(edgeStorage);
+	free(resultStorage);
+	free(heights);
+	free(parents);
 	return 0;
 }
