@@ -142,6 +142,11 @@ int* create_table_of_frequency(FILE *fin) {
 	return table_of_frequency;
 }
 
+void from_tree_to_table(struct treee* tree, int pos_in_buff, char* code_buff){
+
+}
+
+
 int* create_code_table(struct treee* code_tree) {
 	int * code_table = malloc(256 * 256 * sizeof(char));
 	char buff[256];
