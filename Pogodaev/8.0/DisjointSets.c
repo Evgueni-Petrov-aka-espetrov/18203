@@ -3,7 +3,7 @@
 #include <memory.h>
 #include "disjointsets.h"
 
-DisjointSets *CreateSet() {
+DisjointSets *CreateSets() {
 	DisjointSets *sets = (DisjointSets*)malloc(sizeof(DisjointSets));
 	if (!sets) {
 		printf("not enough memory");
@@ -14,7 +14,7 @@ DisjointSets *CreateSet() {
 	return sets;
 }
 
-void MakeSet(DisjointSets *sets, int num) {
+void MakeSet(DisjointSets *sets, short num) {
 	if (num < 1 || num > N) {
 		printf("%d is invalid number\n", num);
 		return;
@@ -28,7 +28,7 @@ void MakeSet(DisjointSets *sets, int num) {
 	return;
 }
 
-int FindSet(DisjointSets *sets, int num) {
+short FindSet(DisjointSets *sets, short num) {
 	if (num < 1 || num > N) {
 		printf("%d is invalid number\n", num);
 		return 0;
@@ -43,9 +43,9 @@ int FindSet(DisjointSets *sets, int num) {
 	return sets->parent[num - 1];
 }
 
-void Union(DisjointSets *sets, int firstNum, int secondNum) {
-	int firstNumID = FindSet(sets, firstNum);
-	int secondNumID = FindSet(sets, secondNum);
+void Union(DisjointSets *sets, short firstNum, short secondNum) {
+	short firstNumID = FindSet(sets, firstNum);
+	short secondNumID = FindSet(sets, secondNum);
 	if (firstNumID == 0 || secondNumID == 0) {
 		printf("union error\n");
 		return;

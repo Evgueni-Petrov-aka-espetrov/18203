@@ -1,2 +1,2 @@
 #pragma once
-int Kruskal(const VerticesList** adjLists, int verticesCount, int edgesCount, FILE* out);
+int Kruskal(Edge* graphEdges, int verticesCount, int edgesCount, FILE* out);

@@ -22,26 +22,21 @@ error_t GetGraphCounts(FILE *in, int *verticesCount, int *edgesCount) {
 	return ok;
 }
 
-void AddEdge(VerticesList **adjacentVerticesLists, int vertexFrom, int vertexTo, int edgeLength) {
-	VerticesList *newEdge = (VerticesList*)malloc(sizeof(VerticesList));
-	assert(newEdge != NULL);
-	newEdge->vertexNumber = vertexTo;
-	newEdge->edgeLength = edgeLength;
-	newEdge->next = adjacentVerticesLists[vertexFrom - 1];
-	adjacentVerticesLists[vertexFrom - 1] = newEdge;
+void AddEdge(Edge *edgesArray, int arrayIndex, int vertexFrom, int vertexTo, int edgeLength) {
+	edgesArray[arrayIndex].edgeLength = edgeLength;
+	edgesArray[arrayIndex].vertexFrom = vertexFrom;
+	edgesArray[arrayIndex].vertexTo = vertexTo;
+	return;
 }
 
-error_t GetGraph(FILE *in, int *verticesCount, int *edgesCount, VerticesList ***adjacentVerticesLists) {
+error_t GetGraph(FILE *in, int *verticesCount, int *edgesCount, Edge **graphEdges) {
 	error_t error = GetGraphCounts(in, verticesCount, edgesCount);
 	if (error != ok) {
-		*adjacentVerticesLists = NULL;
+		*graphEdges = NULL;
 		return error;
 	}
-	*adjacentVerticesLists = (VerticesList**)malloc(*verticesCount * sizeof(VerticesList*));
-	assert(*adjacentVerticesLists != NULL);
-	for (int i = 0; i < *verticesCount; ++i) {
-		(*adjacentVerticesLists)[i] = NULL;
-	}
+	*graphEdges = (Edge*)malloc(*edgesCount * sizeof(Edge));
+	assert(*graphEdges != NULL);
 	for (int i = 0; i < *edgesCount; ++i) {
 		int vertexFrom;
 		int vertexTo;
@@ -55,28 +50,11 @@ error_t GetGraph(FILE *in, int *verticesCount, int *edgesCount, VerticesList ***
 		if (edgeLength < 0 || edgeLength > INT_MAX) {
 			return bad_length;
 		}
-		AddEdge(*adjacentVerticesLists, vertexFrom, vertexTo, edgeLength);
-		if (vertexFrom != vertexTo) {
-			AddEdge(*adjacentVerticesLists, vertexTo, vertexFrom, edgeLength);
-		}
+		AddEdge(*graphEdges, i, vertexFrom, vertexTo, edgeLength);
 	}
 	return ok;
 }
 
-void DeleteVerticesList(VerticesList *list) {
-	if (!list) {
-		return;
-	}
-	DeleteVerticesList(list->next);
-	free(list);
-}
-
-void DeleteGraph(VerticesList **adjacentVerticesLists, int verticesCount) {
-	if (!adjacentVerticesLists) {
-		return;
-	}
-	for (int i = 0; i < verticesCount; ++i) {
-		DeleteVerticesList(adjacentVerticesLists[i]);
-	}
-	free(adjacentVerticesLists);
+void DeleteGraph(Edge *graphEdges) {
+	free(graphEdges);
 }

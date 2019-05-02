@@ -6,8 +6,8 @@
 int main() {
 	int verticesCount;
 	int edgesCount;
-	VerticesList **adjacentVerticesLists;
-	error_t error = GetGraph(stdin, &verticesCount, &edgesCount, &adjacentVerticesLists);
+	Edge *graphEdges;
+	error_t error = GetGraph(stdin, &verticesCount, &edgesCount, &graphEdges);
 	switch (error) {
 	case bad_number_of_vertices: printf("bad number of vertices");
 	case bad_number_of_edges:
@@ -23,7 +23,7 @@ int main() {
 		printf("bad number of lines");
 		break;
 	case ok:
-		if (Kruskal(adjacentVerticesLists, verticesCount, edgesCount, stdout)) {
+		if (Kruskal(graphEdges, verticesCount, edgesCount, stdout)) {
 			printf("no spanning tree");
 		}
 		break;
@@ -31,6 +31,6 @@ int main() {
 		printf("unnamed error");
 		break;
 	}
-	DeleteGraph(adjacentVerticesLists, verticesCount);
+	DeleteGraph(graphEdges);
 	return 0;
 }

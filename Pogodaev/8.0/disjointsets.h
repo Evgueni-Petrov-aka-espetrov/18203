@@ -2,12 +2,12 @@
 #define N 5000
 
 typedef struct {
-	int parent[N];
-	int rank[N];
+	short parent[N];
+	short rank[N];
 } DisjointSets;
 
-DisjointSets *CreateSet();
-void MakeSet(DisjointSets *sets, int num);
-int FindSet(DisjointSets *sets, int num);
-void Union(DisjointSets *sets, int firstNum, int secondNum);
+DisjointSets *CreateSets();
+void MakeSet(DisjointSets *sets, short num);
+short FindSet(DisjointSets *sets, short num);
+void Union(DisjointSets *sets, short firstNum, short secondNum);
 void DeleteSet(DisjointSets *sets);
