@@ -1,0 +1,154 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <stdlib.h>
+int inputcheck(char inputbuffer[], int symbolscount);
+int calc(char inputbuffer[], int symbolscount, int *currentpos);
+int main() {
+	char inputbuffer[1000];
+	char tmp = 0;
+	int symbolscount = 0;
+	while (symbolscount != 1000) { 
+		scanf("%c", &tmp);
+		if (tmp != '\n') {
+			inputbuffer[symbolscount] = tmp;
+			symbolscount++;
+		}
+		if (tmp == '\n') {
+			break;
+		}
+	}
+	int x = inputcheck(inputbuffer, symbolscount);
+	if (x == 1) {
+		return 1;
+	}
+	int currentpos = 0;
+	int result = calc(inputbuffer, symbolscount, &currentpos);
+	printf("%d", result);
+	return 0;
+}
+int inputcheck(char inputbuffer[], int symbolscount) {
+	char inputcheck[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '-', '*', '/', '(', ')' };
+	int counter = 0;
+	for (int i = 0; i < symbolscount; i++) {
+		while ((inputbuffer[i] != inputcheck[counter]) && (counter < 16)) {
+			counter++;
+		}
+		if (counter == 16) {
+			printf("syntax error\n");
+			return 0;
+		}
+		counter = 0;
+	}
+	int bracketscount = 0;
+	for (int i = 0; i < symbolscount; i++) { 
+		if (bracketscount < 0) {
+			printf("syntax error");
+			exit(0);
+		}
+		if (inputbuffer[i] == '(') {
+			bracketscount++;
+		}
+		if (inputbuffer[i] == ')') {
+			bracketscount--;
+		}
+	}
+	if (bracketscount != 0) {
+		printf("syntax error");
+		exit(0);
+	}
+	return 0;
+}
+int calc(char inputbuffer[], int symbolscount, int *currentpos) {
+	int operand1, operand2, operand3;
+	char operation1, operation2;
+	if (inputbuffer[*currentpos] >= '0' && inputbuffer[*currentpos] <= '9') {
+		operand1 = recnumber(inputbuffer, symbolscount, currentpos);
+	} else if (inputbuffer[*currentpos] == '(') {
+		(*currentpos)++;
+		operand1 = calc(inputbuffer, symbolscount, currentpos);
+		(*currentpos)++;
+	} else {
+		printf("syntax error\n");
+		exit(0);
+	}
+	if (inputbuffer[*currentpos] == ')' || (*currentpos) == symbolscount) {
+		return operand1;
+	} 
+	if (inputbuffer[*currentpos] == '+' || inputbuffer[*currentpos] == '-' || inputbuffer[*currentpos] == '*' || inputbuffer[*currentpos] == '/') {
+		operation1 = inputbuffer[*currentpos];
+		(*currentpos)++; 
+	} else {
+		printf("syntax error\n");
+		exit(0);
+	}
+	if (inputbuffer[*currentpos] >= '0' && inputbuffer[*currentpos] <= '9') {
+		operand2 = recnumber(inputbuffer, symbolscount, currentpos);
+	}
+	else if (inputbuffer[*currentpos] == '(') {
+		(*currentpos)++;
+		operand2 = calc(inputbuffer, symbolscount, currentpos);
+		(*currentpos)++;
+	}
+	else {
+		printf("syntax error\n"); 
+		exit(0);
+	}
+	while (1) {
+		if (inputbuffer[*currentpos] == ')' || (*currentpos) == symbolscount) {
+			return calcop(operand1, operand2, operation1);
+		}
+		if (inputbuffer[*currentpos] == '+' || inputbuffer[*currentpos] == '-' || inputbuffer[*currentpos] == '*' || inputbuffer[*currentpos] == '/') {
+			operation2 = inputbuffer[*currentpos];
+			(*currentpos)++; 
+		}
+		else {
+			printf("syntax error\n");
+			exit(0);
+		}
+		if (inputbuffer[*currentpos] >= '0' && inputbuffer[*currentpos] <= '9') {
+			operand3 = recnumber(inputbuffer, symbolscount, currentpos);
+		}
+		else if (inputbuffer[*currentpos] == '(') {
+			(*currentpos)++;
+			operand3 = calc(inputbuffer, symbolscount, currentpos);
+			(*currentpos)++;
+		}
+		else {
+			printf("syntax error\n");
+			exit(0);
+		}
+		if ((operation1 == '-' || operation1 == '+') && (operation2 == '*' || operation2 == '/')) {
+			operand2 = calcop(operand2, operand3, operation2);
+		}
+		else {
+			operand1 = calcop(operand1, operand2, operation1);
+			operation1 = operation2;
+			operand2 = operand3;
+		}
+	}
+}
+int recnumber(char inputbuffer[], int symbolscount, int *currentpos) {
+	int accum = 0, i = *currentpos;
+	while (inputbuffer[i] >= '0' && inputbuffer[i] <= '9') {
+		accum = accum * 10 + inputbuffer[i] - '0';
+		i++;
+		(*currentpos)++;
+	}
+	return accum;
+}
+int calcop(int operand1, int operand2, char operation1) {
+	switch (operation1) {
+	case('+'):
+		return operand1 + operand2;
+	case('-'):
+		return operand1 - operand2;
+	case('*'):
+		return operand1 * operand2;
+	case('/'):
+		if (operand2 == 0) {
+			printf("division by zero");
+			exit(0);
+		}
+		return operand1 / operand2;
+	}
+}
