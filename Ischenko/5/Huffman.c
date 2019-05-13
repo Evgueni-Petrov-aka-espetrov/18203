@@ -33,6 +33,17 @@ struct treee* create_tree(unsigned char symbol) {
 	return new_tree;
 }
 
+void delete_tree(struct treee* tree){
+	if (tree->left == NULL) {
+		return;
+	}
+	else {
+		delete_tree(tree->left);
+		free(tree->left);
+		delete_tree(tree->right);
+		free(tree->right);
+	}
+}
 ////////////////
 struct list* create_list(unsigned char symbol, int weight) {
 	struct treee* new_tree = create_tree(symbol);
@@ -242,7 +253,6 @@ void code_data(FILE* fin, FILE* fout,struct bits_buff* buff_of_bits,unsigned cha
 void code_if_unique(FILE* fin, FILE* fout,struct bits_buff* buff_of_bits){
 	int EOF_catcher = 0;
 	unsigned char symbol;
-	//fseek(fin, -1, SEEK_CUR);
 	EOF_catcher = fscanf(fin, "%c", &symbol);
 	while (EOF_catcher != EOF) {
 		push_in_bits_buff(buff_of_bits, '1', fout);
@@ -286,19 +296,16 @@ void code(FILE *fin, FILE*fout) {
 		fprintf(fout, "%c", code_tree->symbol);
 		code_if_unique(fin, fout, buff_of_bits);
 		mode = 1 << 3;
-
-		//return;
 		goto if_mode_not_normal;
 	}
 	if (code_tree->height == 9 && ammount_of_symbols == 256) {
 		direct_coding(fin, fout);
 		mode = 1 << 4;
-		//if file has same ammount of all symbols
-		//return;
 		goto if_mode_not_normal;
 	}
 	unsigned char* code_table = create_code_table(code_tree);
 	serialize_tree(code_tree, fout, buff_of_bits);
+	delete_tree(code_tree);
 	free(code_tree);
 	extra_bits_for_serialized_tree = (8 - buff_of_bits->used_bits) % 8;
 	for (int i = 0; i < extra_bits_for_serialized_tree; i++) {
@@ -404,17 +411,6 @@ struct treee* deserialize_tree(FILE* fin){
 	deserialization(fin, buff_of_bits, tree);
 	free(buff_of_bits);
 	return tree;
-}
-void delete_tree(struct treee* tree){
-	if (tree->left == NULL) {
-		return;
-	}
-	else {
-		delete_tree(tree->left);
-		free(tree->left);
-		delete_tree(tree->right);
-		free(tree->right);
-	}
 }
 
 void normal_decode(FILE* fin, FILE* fout, int extra_bits) {
