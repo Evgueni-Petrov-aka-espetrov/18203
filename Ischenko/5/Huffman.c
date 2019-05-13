@@ -424,7 +424,6 @@ void normal_decode(FILE* fin, FILE* fout, int extra_bits) {
 	is_file_ended = fill_bits_buffer(controlled_buff_of_bits, fin);
 	struct treee* current_tree = NULL;
 	int bit = 0;
-	int k = 0;
 	while (is_file_ended != file_ended) {
 		current_tree = code_tree;
 		while (1) {
