@@ -3,6 +3,7 @@
 #include <malloc.h>
 
 typedef struct TStack TStack;
+typedef struct storageOfTStack storageOfTStack;
 #define bool char
 #define true 1
 #define false 0
@@ -12,8 +13,14 @@ struct TStack {
 	TStack* next;
 };
 
-TStack** read(FILE* inputFile, FILE* outputFile, int* numberOfVertices);
-TStack* addToStack(TStack* stack, int value);
+struct storageOfTStack {
+	int counter, size;
+	TStack* storage;
+};
+
+storageOfTStack* createAndInitStackStorage(int size);
+TStack** read(FILE* inputFile, FILE* outputFile, int* numberOfVertices, storageOfTStack** storageToFreeLater);
+TStack* addToStack(TStack* stack, int value, storageOfTStack* storage);
 bool getFromStack(TStack** stack, int* destinationVariable);
 int* topSort(TStack** vertices, int numberOfVertices);
 bool sortUnderVertex(TStack** vertices, int vertex, int* sortedVertices, int* numberOfSortedVertices);
@@ -31,7 +38,8 @@ int main() {
 	}
 
 	int numberOfVertices;
-	TStack** vertices = read(inputFile, outputFile, &numberOfVertices);
+	storageOfTStack* storageToFreeLater;
+	TStack** vertices = read(inputFile, outputFile, &numberOfVertices, &storageToFreeLater);
 	if (vertices == NULL) {
 		fclose(inputFile);
 		fclose(outputFile);
@@ -51,10 +59,22 @@ int main() {
 	for (int i = 1; i != numberOfVertices; ++i)
 		fprintf(outputFile, " %d", sortedVertices[i] + 1);
 	free(sortedVertices);
+	free(storageToFreeLater->storage);
+	free(storageToFreeLater);
+	//system("pause");
 
 	fclose(inputFile);
 	fclose(outputFile);
 	return 0;
+}
+
+storageOfTStack* createAndInitStackStorage(int size) {
+	TStack* forData = (TStack*)malloc(sizeof(TStack) * size);
+	storageOfTStack* storage = (storageOfTStack*)malloc(sizeof(storageOfTStack));
+	storage->counter = 0;
+	storage->size = size;
+	storage->storage = forData;
+	return storage;
 }
 
 void clearStackArray(TStack** array, int numberOfElements) {
@@ -65,16 +85,16 @@ void clearStackArray(TStack** array, int numberOfElements) {
 }
 
 bool sortUnderVertex(TStack** vertices, int vertex, int* sortedVertices, int* numberOfSortedVertices) {	//sort of vertex and children
-	if ((int)vertices[vertex] & 2)			//if already searched
+	if ((size_t)vertices[vertex] & 2)			//if already searched
 		return true;
-	if ((int)(vertices[vertex]) & 1)		//if being searched
+	if ((size_t)(vertices[vertex]) & 1)		//if being searched
 		return false;
-	vertices[vertex] = (TStack*)((int)vertices[vertex] + 1);	//being searched from now
+	vertices[vertex] = (TStack*)((size_t)vertices[vertex] + 1);	//being searched from now
 	int child;
 	while (getFromStack(&vertices[vertex], &child))	//if child exist
 		if (!sortUnderVertex(vertices, child, sortedVertices, numberOfSortedVertices))			//topSort of a child
 			return false;
-	vertices[vertex] = (TStack*)((int)vertices[vertex] + 2);	//searched
+	vertices[vertex] = (TStack*)((size_t)vertices[vertex] + 2);	//searched
 	sortedVertices[*numberOfSortedVertices] = vertex;
 	++*numberOfSortedVertices;
 	return true;
@@ -94,17 +114,16 @@ unableToSort:
 }
 
 bool getFromStack(TStack** stack, int* destinationVariable) {
-	TStack* stackPtr = (TStack*)((int)*stack & 0xfffffffc);
+	TStack* stackPtr = (TStack*)((size_t)*stack - ((size_t)*stack & 3));
 	if (stackPtr == NULL)
 		return false;
 	*destinationVariable = stackPtr->value;
 	TStack* cutStack = stackPtr->next;
-	free(stackPtr);
-	*stack = (TStack*)((int)cutStack + ((int)*stack & 3));
+	*stack = (TStack*)((size_t)cutStack + ((size_t)*stack & 3));
 	return true;
 }
 
-TStack** read(FILE* inputFile, FILE* outputFile, int* numberOfVertices) {
+TStack** read(FILE* inputFile, FILE* outputFile, int* numberOfVertices, storageOfTStack** storageToFreeLater) {
 	int numberOfConnections;
 	fscanf(inputFile, "%d", numberOfVertices);
 	fscanf(inputFile, "%d", &numberOfConnections);
@@ -130,6 +149,8 @@ TStack** read(FILE* inputFile, FILE* outputFile, int* numberOfVertices) {
 	TStack** vertices = (TStack**)malloc(*numberOfVertices * sizeof(TStack**));
 	for (int i = 0; i != *numberOfVertices; ++i)
 		vertices[i] = NULL;
+	//system("pause");
+	*storageToFreeLater = createAndInitStackStorage(numberOfConnections);
 	for (int i = 0; i != numberOfConnections; ++i) {
 		fscanf(inputFile, "%d %d", &child, &vertex);
 		if (feof(inputFile)) {
@@ -144,13 +165,14 @@ TStack** read(FILE* inputFile, FILE* outputFile, int* numberOfVertices) {
 		}
 		--child;
 		--vertex;
-		vertices[vertex] = addToStack(vertices[vertex], child);
+		vertices[vertex] = addToStack(vertices[vertex], child, *storageToFreeLater);
 	}
+	//system("pause");
 	return vertices;
 }
 
-TStack* addToStack(TStack* stack, int value) {
-	TStack* newStack = (TStack*)malloc(sizeof(TStack));
+TStack* addToStack(TStack* stack, int value, storageOfTStack* storage) {
+	TStack* newStack = storage->storage + storage->counter++;
 	newStack->value = value;
 	newStack->next = stack;
 	return newStack;
