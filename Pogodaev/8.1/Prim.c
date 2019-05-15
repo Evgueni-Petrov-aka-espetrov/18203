@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 #include "graphio.h"
 #include "minprqueue.h"
 #include "prim.h"
+#define NIL 0
 
 int Prim(MatrixEdge **adjacentMatrix, int verticesCount, FILE* out) {
 	if (verticesCount < 1) {
@@ -11,31 +13,31 @@ int Prim(MatrixEdge **adjacentMatrix, int verticesCount, FILE* out) {
 	int isNoSpanningTree = 0;
 	short *parent = (short*)malloc(verticesCount * sizeof(short));
 	for (int i = 0; i < verticesCount; ++i) {
-		parent[i] = -1;
+		parent[i] = NIL;
 	}
 	PQueue *queue = CreateQueue();
 	Insert(queue, 0, (short)1);
 	for (int i = 2; i <= verticesCount; ++i) {
-		Insert(queue, (unsigned int)INT_MAX + 1u, (short)i);
+		Insert(queue, INFINITY, (short)i);
 	}
-	QueueElement nextElement;
-	while (ExtractMin(queue, &nextElement)) {
+	short nextMinVertex;
+	while (ExtractMin(queue, &nextMinVertex)) {
 		for (short i = 0; i < verticesCount; ++i) {
-			MatrixEdge edge = i < nextElement.data ?
-				adjacentMatrix[nextElement.data - 1][i] :
-				adjacentMatrix[i][nextElement.data - 1];
+			MatrixEdge edge = (i + 1) < nextMinVertex ?
+				adjacentMatrix[nextMinVertex - 1][i] :
+				adjacentMatrix[i][nextMinVertex - 1];
 			if (edge.isExist) {
-				int number;
-				if (SearchQueueElement(queue, i + 1, &number) && edge.edgeLength < queue->heap[number].priority) {
-					parent[i] = nextElement.data;
-					ChangePriority(queue, number, edge.edgeLength);
+				unsigned int ithVertexPriority;
+				if (GetPriority(queue, i + 1, &ithVertexPriority) && edge.edgeLength < ithVertexPriority) {
+					parent[i] = nextMinVertex;
+					ChangePriority(queue, i + 1, edge.edgeLength);
 				}
 			}
 		}
 	}
 	DestroyQueue(queue);
 	for (int i = 1; i < verticesCount; ++i) {
-		if (parent[i] == -1) {
+		if (parent[i] == NIL) {
 			isNoSpanningTree = 1;
 		}
 	}

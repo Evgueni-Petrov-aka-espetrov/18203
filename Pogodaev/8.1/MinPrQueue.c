@@ -1,11 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "minprqueue.h"
+#define NIL (unsigned int)INT_MAX + 2u 
 
 PQueue *CreateQueue() {
 	PQueue *queue = (PQueue*)malloc(sizeof(PQueue));
 	if (queue != NULL) {
-		queue->heapSize = 0;
+		queue->elementsCount = 0;
+		for (int i = 0; i < QMAXSIZE; ++i) {
+			queue->priorities[i] = NIL;
+		}
 		return queue;
 	}
 	else {
@@ -18,91 +22,59 @@ void DestroyQueue(PQueue *queue) {
 	free(queue);
 }
 
-void swap(QueueElement *a, QueueElement *b) {
-	QueueElement t = *a;
+void swap(short *a, short *b) {
+	short t = *a;
 	*a = *b;
 	*b = t;
 }
 
-int Parent(int number) {
-	++number;
-	return (number / 2) - 1;
-}
-
-int LeftChild(int number) {
-	++number;
-	return (number * 2) - 1;
-}
-
-int RightChild(int number) {
-	++number;
-	return number * 2;
-}
-
-void SiftUp(QueueElement *heap, int number) {
-	if (number > 0 && heap[number].priority < heap[Parent(number)].priority) {
-		swap(&heap[number], &heap[Parent(number)]);
-		SiftUp(heap, Parent(number));
+int Insert(PQueue *queue, unsigned int priority, short vertex) {
+	if (queue->elementsCount >= QMAXSIZE) return 0;
+	if (queue->priorities[vertex - 1] != NIL) {
+		ChangePriority(queue, vertex, priority);
+		return 1;
 	}
-	else return;
-}
-
-void SiftDown(QueueElement *heap, int number, int size) {
-	int min = number;
-	if (LeftChild(number) < size && heap[LeftChild(number)].priority < heap[number].priority) {
-		min = LeftChild(number);
-	}
-	if (RightChild(number) < size && heap[RightChild(number)].priority < heap[min].priority) {
-		min = RightChild(number);
-	}
-	if (min != number) {
-		swap(&heap[number], &heap[min]);
-		SiftDown(heap, min, size);
-	}
-	return;
-}
-
-int GetMin(PQueue *queue, QueueElement *toGet) {
-	if (queue->heapSize <= 0) return 0;
-	*toGet = queue->heap[0];
+	queue->elements[queue->elementsCount] = vertex;
+	queue->priorities[vertex - 1] = priority;
+	++queue->elementsCount;
 	return 1;
 }
 
-int Insert(PQueue *queue, unsigned int priority, T data) {
-	if (queue->heapSize >= QMAXSIZE) return 0;
-	queue->heap[queue->heapSize].data = data;
-	queue->heap[queue->heapSize].priority = priority;
-	SiftUp(queue->heap, queue->heapSize);
-	++queue->heapSize;
-	return 1;
-}
-
-int ExtractMin(PQueue *queue, QueueElement *toExtract) {
-	if (queue->heapSize <= 0) return 0;
-	*toExtract = queue->heap[0];
-	queue->heap[0] = queue->heap[queue->heapSize - 1];
-	--queue->heapSize;
-	SiftDown(queue->heap, 0, queue->heapSize);
-	return 1;
-}
-
-int SearchQueueElement(PQueue *queue, T data, int *number) {
-	for (int i = 0; i < queue->heapSize; ++i) {
-		if (queue->heap[i].data == data) {
-			*number = i;
-			return 1;
+int ExtractMin(PQueue *queue, short *minVertex) {
+	if (queue->elementsCount <= 0) {
+		return 0;
+	}
+	unsigned int minPriority = INFINITY;
+	int minPriorityElementIndex;
+	for (int i = 0; i < queue->elementsCount; ++i) {
+		if (queue->priorities[queue->elements[i] - 1] <= minPriority) {
+			minPriority = queue->priorities[queue->elements[i] - 1];
+			minPriorityElementIndex = i;
 		}
 	}
-	return 0;
+	*minVertex = queue->elements[minPriorityElementIndex];
+	queue->priorities[*minVertex - 1] = NIL;
+	swap(&queue->elements[minPriorityElementIndex], &queue->elements[queue->elementsCount - 1]);
+	--queue->elementsCount;
+	return 1;
 }
 
-void ChangePriority(PQueue *queue, int number, unsigned int newPriority) {
-	unsigned int oldPriority = queue->heap[number].priority;
-	queue->heap[number].priority = newPriority;
-	if (newPriority > oldPriority) {
-		SiftDown(queue->heap, number, queue->heapSize);
+int GetPriority(PQueue *queue, short vertex, unsigned int *priority) {
+	if (queue->priorities[vertex - 1] <= INFINITY) {
+		*priority = queue->priorities[vertex - 1];
+		return 1;
 	}
 	else {
-		SiftUp(queue->heap, number);
+		return 0;
+	}
+}
+
+int ChangePriority(PQueue *queue, short vertex, unsigned int newPriority) {
+	if (queue->priorities[vertex - 1] != NIL) {
+		queue->priorities[vertex - 1] = newPriority;
+		return 1;
+	}
+	else {
+		return 0;
 	}
 }

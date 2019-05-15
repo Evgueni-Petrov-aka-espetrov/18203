@@ -1,21 +1,16 @@
 #pragma once
-typedef short T;
 #define QMAXSIZE 5000
+#define INFINITY (unsigned int)INT_MAX + 1u
 
 typedef struct {
-	unsigned int priority;
-	T data;
-} QueueElement;
-
-typedef struct {
-	QueueElement heap[QMAXSIZE];
-	int heapSize;
+	short elements[QMAXSIZE];
+	unsigned int priorities[QMAXSIZE];
+	int elementsCount;
 } PQueue;
 
 PQueue *CreateQueue();
 void DestroyQueue(PQueue* queue);
-int Insert(PQueue *queue, unsigned int priority, T data);
-int GetMin(PQueue *queue, QueueElement *toGet);
-int ExtractMin(PQueue *queue, QueueElement *toExtract);
-int SearchQueueElement(PQueue *queue, T data, int *number);
-void ChangePriority(PQueue *queue, int number, unsigned int newPriority);
+int Insert(PQueue *queue, unsigned int priority, short vertex);
+int ExtractMin(PQueue *queue, short *minVertex);
+int GetPriority(PQueue *queue, short vertex, unsigned int *priority);
+int ChangePriority(PQueue *queue, short vertex, unsigned int newPriority);
