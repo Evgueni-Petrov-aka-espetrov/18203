@@ -1,0 +1,71 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define GA(i,j) grapharray[(i)*countvertices+j]
+void topsort(int* grapharray, int* colorarray, int countvertices, int currentvertex, int* finalarray, int* counter);
+
+int main() {
+	int countvertices = 0;
+	if (scanf("%d", &countvertices) != 1) {
+		printf("bad number of lines\n");
+		return 0;
+	}
+	if (countvertices > 1000 || countvertices < 0) {
+		printf("bad number of vertices\n");
+		return 0;
+	}
+	int *grapharray = (int *)malloc(countvertices*countvertices*sizeof(int));
+	memset(grapharray, 0, countvertices*countvertices * sizeof(int));
+	int countarcs = 0;
+	if (scanf("%d", &countarcs) != 1) {
+		printf("bad number of lines\n");
+		return 0;
+	}
+	if (countarcs > countvertices*(countvertices + 1)/2 || countarcs < 0) {
+		printf("bad number of edges\n");
+		return 0;
+	}
+	int x = 0, y = 0;
+	for (int i = 0; i < countarcs; i++) {
+		if (scanf("%d %d", &x, &y) != 2) {
+			printf("bad number of lines\n");
+			return 0;
+		}
+		if (x<1 || x>countvertices || y<1 || y>countvertices) {
+			printf("bad vertex\n");
+			return 0;
+		}
+		GA(x - 1, y - 1) = 1;
+	}
+	int *colorarray = (int *)malloc(countvertices * sizeof(int));
+	memset(colorarray, 0, countvertices * sizeof(int));
+	int* finalarray = (int *)malloc(countvertices * sizeof(int));
+	int counter = 0;
+	for (int i = 0; i < countvertices; i++) {
+		topsort(grapharray, colorarray, countvertices, i, finalarray, &counter);
+	}	
+	for (int i = 0; i < countvertices; i++) {
+		printf("%d ", finalarray[i]);
+	}
+	return 0;
+}
+void topsort(int* grapharray, int* colorarray, int countvertices, int currentvertex, int* finalarray, int* counter) {
+	if (colorarray[currentvertex] == 2) {
+		return;
+	}
+	if (colorarray[currentvertex] == 1) {
+		printf("impossible to sort\n");
+		exit(0);
+	}
+	colorarray[currentvertex] = 1;
+	for (int i = 0; i < countvertices; i++) {
+		if (GA(i, currentvertex) == 1) {
+			topsort(grapharray, colorarray, countvertices, i, finalarray, counter);
+		}
+	}
+	colorarray[currentvertex] = 2;
+	finalarray[*counter] = currentvertex + 1;
+	(*counter)++;
+}
