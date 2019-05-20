@@ -28,9 +28,15 @@ error_t GetGraphCountsAndPath(FILE *in, int *verticesCount, int *pathVertexFrom,
 	return ok;
 }
 
-void AddEdge(MatrixEdge **adjacentMatrix, int vertexFrom, int vertexTo, unsigned int edgeLength) {
-	adjacentMatrix[vertexFrom - 1][vertexTo - 1].isExist = 1;
-	adjacentMatrix[vertexFrom - 1][vertexTo - 1].edgeLength = edgeLength;
+void AddEdge(MatrixEdge **adjacentMatrix, int vertexFrom, int vertexTo, int edgeLength) {
+	if (vertexFrom >= vertexTo) {
+		adjacentMatrix[vertexFrom - 1][vertexTo - 1].isExist = 1;
+		adjacentMatrix[vertexFrom - 1][vertexTo - 1].edgeLength = edgeLength;
+	}
+	else {
+		adjacentMatrix[vertexTo - 1][vertexFrom - 1].isExist = 1;
+		adjacentMatrix[vertexTo - 1][vertexFrom - 1].edgeLength = edgeLength;
+	}
 	return;
 }
 
@@ -38,9 +44,9 @@ void CreateAdjacentMatrix(MatrixEdge ***adjacentMatrix, int verticesCount) {
 	*adjacentMatrix = (MatrixEdge**)malloc(verticesCount * sizeof(MatrixEdge*));
 	assert(*adjacentMatrix != NULL);
 	for (int i = 0; i < verticesCount; ++i) {
-		(*adjacentMatrix)[i] = (MatrixEdge*)malloc(verticesCount * sizeof(MatrixEdge));
+		(*adjacentMatrix)[i] = (MatrixEdge*)malloc((i + 1) * sizeof(MatrixEdge));
 		assert((*adjacentMatrix)[i] != NULL);
-		for (int j = 0; j < verticesCount; ++j) {
+		for (int j = 0; j < i + 1; ++j) {
 			(*adjacentMatrix)[i][j].isExist = 0;
 			(*adjacentMatrix)[i][j].edgeLength = 0;
 		}

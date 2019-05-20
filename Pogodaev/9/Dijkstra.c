@@ -16,18 +16,15 @@ void InitializeSingleSource(PQueue *queue, short *parents, unsigned int *estimat
 	return;
 }
 
-int Relax(PQueue *queue, short *parents, unsigned int *estimations, int vertexFrom, int vertexTo, unsigned int edgeLength) {
-	unsigned int vertexFromPriority;
-	unsigned int vertexToPriority;
-	if (!GetPriority(queue, vertexFrom, &vertexFromPriority) || !GetPriority(queue, vertexTo, &vertexToPriority)) {
-		return 0;
-	}
-	if (vertexToPriority > vertexFromPriority + edgeLength) {
-		estimations[vertexTo - 1] = vertexFromPriority + edgeLength;
-		ChangePriority(queue, vertexTo, vertexFromPriority + edgeLength);
+void Relax(PQueue *queue, short *parents, unsigned int *estimations, int vertexFrom, int vertexTo, unsigned int edgeLength) {
+	if (vertexFrom == vertexTo) return;
+	if (estimations[vertexTo - 1] == NOT_ESTIMATED || estimations[vertexTo - 1] > estimations[vertexFrom - 1] + edgeLength) {
+		estimations[vertexTo - 1] = estimations[vertexFrom - 1] + edgeLength > (unsigned int)INT_MAX ?
+			INFINITY : estimations[vertexFrom - 1] + edgeLength;
+		ChangePriority(queue, vertexTo, estimations[vertexTo - 1]);
 		parents[vertexTo - 1] = vertexFrom;
 	}
-	return 1;
+	return;
 }
 
 void PrintDistances(unsigned int *estimations, int verticesCount) {
@@ -46,28 +43,41 @@ void PrintDistances(unsigned int *estimations, int verticesCount) {
 }
 
 void PrintPath(short *parents, int pathVertexFrom, int pathVertexTo) {
+	printf("%d ", pathVertexTo);
 	if (parents[pathVertexTo - 1] != NIL) {
 		PrintPath(parents, pathVertexFrom, parents[pathVertexTo - 1]);
 	}
-	printf("%d", pathVertexTo);
+}
+
+int IsOverflowed(const short *parents, const MatrixEdge **adjacentMatrix, int pathVertexTo, int verticesCount) {
+	for (int i = 0; i < verticesCount; ++i) {
+		MatrixEdge lastEdge = pathVertexTo - 1 > i ?
+			adjacentMatrix[pathVertexTo - 1][i] :
+			adjacentMatrix[i][pathVertexTo - 1];
+		if ((i + 1) != parents[pathVertexTo - 1] && lastEdge.isExist) {
+			return 1;
+		}
+	}
+	return 0;
 }
 
 void Dijkstra(const MatrixEdge **adjacentMatrix, int verticesCount, int pathVertexFrom, int pathVertexTo) {
 	PQueue *queue = CreateQueue();
-	short parents[5000];
-	unsigned int estimations[5000];
-	//short *parents = (short*)malloc(verticesCount * sizeof(short));
-	//unsigned int *estimations = (unsigned int*)malloc(verticesCount * sizeof(unsigned int));
+	short *parents = (short*)malloc(verticesCount * sizeof(short));
+	unsigned int *estimations = (unsigned int*)malloc(verticesCount * sizeof(unsigned int));
 	InitializeSingleSource(queue, parents, estimations, pathVertexFrom, verticesCount);
 	short minEstimationVertex;
 	while (ExtractMin(queue, &minEstimationVertex)) {
 		for (int i = 0; i < verticesCount; ++i) {
-			MatrixEdge edge = adjacentMatrix[minEstimationVertex - 1][i];
+			MatrixEdge edge = minEstimationVertex - 1 > i ?
+				adjacentMatrix[minEstimationVertex - 1][i] :
+				adjacentMatrix[i][minEstimationVertex - 1];
 			if (edge.isExist) {
 				Relax(queue, parents, estimations, minEstimationVertex, i + 1, edge.edgeLength);
 			}
 		}
 	}
+	DestroyQueue(queue);
 	PrintDistances(estimations, verticesCount);
 	if (estimations[pathVertexTo - 1] <= (unsigned int)INT_MAX) {
 		PrintPath(parents, pathVertexFrom, pathVertexTo);
@@ -76,7 +86,12 @@ void Dijkstra(const MatrixEdge **adjacentMatrix, int verticesCount, int pathVert
 		printf("no path");
 	}
 	else {
-		printf("overflow");
+		if (!IsOverflowed(parents, adjacentMatrix, pathVertexTo, verticesCount)) {
+			PrintPath(parents, pathVertexFrom, pathVertexTo);
+		}
+		else {
+			printf("overflow");
+		}
 	}
 	free(parents);
 	free(estimations);

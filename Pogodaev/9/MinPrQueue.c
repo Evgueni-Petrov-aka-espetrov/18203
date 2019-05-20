@@ -71,9 +71,6 @@ int GetPriority(PQueue *queue, short vertex, unsigned int *priority) {
 
 int ChangePriority(PQueue *queue, short vertex, unsigned int newPriority) {
 	if (queue->priorities[vertex - 1] != NIL) {
-		if (newPriority > (unsigned int)INT_MAX) {
-			queue->priorities[vertex - 1] = INFINITY;
-		}
 		queue->priorities[vertex - 1] = newPriority;
 		return 1;
 	}
