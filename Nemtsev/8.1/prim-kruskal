@@ -1,0 +1,197 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <assert.h>
+#define GA(i,j) grapharray[(i)*countvertices+j]
+
+void quicksort(struct edge* A, int numbersCount);
+int isconnected(int *grapharray, int *colorarray, int countvertices, int x, int y);
+void paint(int *colorarray, int countvertices, int oldcolor, int newcolor);
+
+struct edge {
+	int x, y;
+	long int z;
+};
+
+void fastscan(int *x)
+{
+	int neg = 0;
+	int flag = 0;
+	register int c;
+	*x = 0;
+	c = getchar();
+	while (c == '\n' || c == ' ')
+		c = getchar();
+	if (c == '-')
+	{
+		neg = 1;
+		c = getchar();
+	}
+	for (; (c > 47 && c < 58); c = getchar()) {
+		*x = (*x << 1) + (*x << 3) + c - 48;
+		flag = 1;
+	}
+	if (neg)
+		*x *= -1;
+	if (!flag)
+		*x = INT_MIN;
+}
+
+int compare_edges(const void *a, const void *b)
+{
+	struct edge *aa = (struct edge *)a;
+	struct edge *bb = (struct edge *)b;
+
+	return aa->z - bb->z;
+}
+
+int main() {
+
+	int countvertices = 0;
+	if (scanf("%d", &countvertices) != 1) {
+		printf("bad number of lines\n");
+		return 0;
+	}
+	if (countvertices > 5000 || countvertices < 0) {
+		printf("bad number of vertices\n");
+		return 0;
+	}
+	int *grapharray = (int *)malloc(countvertices*countvertices * sizeof(int));
+	memset(grapharray, 0, countvertices*countvertices * sizeof(int));
+	int countarcs = 0;
+	if (scanf("%d", &countarcs) != 1) {
+		printf("bad number of lines\n");
+		return 0;
+	}
+	if (countarcs > countvertices*(countvertices + 1) / 2 || countarcs < 0) {
+		printf("bad number of edges\n");
+		return 0;
+	}
+	int x = 0, y = 0;
+	int z = 0;
+	struct edge *edgearray = (struct edge *)malloc(sizeof(struct edge)*countarcs);
+
+	if (countarcs==0 && countvertices==0) {
+		printf("no spanning tree\n");
+		return 0;
+	}
+
+	for (int i = 0; i < countarcs; i++) {
+		/*if (scanf_unlocked("%ld %ld %ld", &x, &y, &z) != 3) {
+			printf("bad number of lines\n");
+			return 0;
+		}*/
+		fastscan(&x);
+		fastscan(&y);
+		fastscan(&z);
+		if (x == INT_MIN || y == INT_MIN || z == INT_MIN) {
+			printf("bad number of lines\n");
+			return 0;
+		}
+		if (x<1 || x>countvertices || y<1 || y>countvertices) {
+			printf("bad vertex\n");
+			return 0;
+		}
+		if (z < 0 || z > INT_MAX) {
+			printf("bad length\n");
+			return 0;
+		}
+		GA(x - 1, y - 1) = z;
+		GA(y - 1, x - 1) = z;
+
+		edgearray[i].x = x - 1;
+		edgearray[i].y = y - 1;
+		edgearray[i].z = z;
+	}
+
+	//quicksort(edgearray, countarcs);
+	//qsort(edgearray, countarcs, sizeof(struct edge), compare_edges);
+
+	int *colorarray = (int *)malloc(countvertices * sizeof(int));
+	for (int i = 0; i < countvertices; i++) {
+		colorarray[i] = i;
+	}
+
+	for (int i = 0; i < countvertices - 1; i++) {
+		int min = -1;
+		for (int i = 0; i < countarcs; i++) {
+			if ((colorarray[edgearray[i].x] == 0 && colorarray[edgearray[i].y] != 0) || (colorarray[edgearray[i].y] == 0 && colorarray[edgearray[i].x] != 0)) {
+				if (min == -1 || edgearray[i].z < edgearray[min].z) {
+					min = i;
+				}
+			}
+		}
+		if (min == -1) {
+			printf("no spanning tree\n");
+			return 0;
+		}
+		GA(edgearray[min].x, edgearray[min].y) = -GA(edgearray[min].x, edgearray[min].y);
+		GA(edgearray[min].y, edgearray[min].x) = -GA(edgearray[min].y, edgearray[min].x);
+		colorarray[edgearray[min].x] = 0;
+		colorarray[edgearray[min].y] = 0;
+	}
+
+
+	for (int i = 0; i < countvertices; i++) {
+		for (int j = 0; j < i; j++) {
+			if (GA(i, j) < 0) {
+				printf("%d %d\n", i + 1, j + 1);
+			}
+		}
+	}
+	return 0;
+}
+
+void paint(int *colorarray, int countvertices, int oldcolor, int newcolor) {
+
+	for (int i = 0; i < countvertices; i++) {
+		if (colorarray[i] == oldcolor) {
+			colorarray[i] = newcolor;
+		}
+	}
+}
+
+int isconnected(int *grapharray, int *colorarray, int countvertices, int x, int y) {
+
+	if (x == y) {
+		return 1;
+	}
+	if (colorarray[x] == 1) {
+		return 0;
+	}
+	colorarray[x] = 1;
+	for (int i = 0; i < countvertices; i++) {
+		if (GA(i, x) < 0 && isconnected(grapharray, colorarray, countvertices, i, y)) {
+			return 1;
+		}
+	}
+	return 0;
+}
+
+
+void quicksort(struct edge* A, int numbersCount) {
+	int high = numbersCount - 1;
+	int low = 0;
+	long int pivot = A[numbersCount / 2].z;
+
+	while (high > low) {
+		while (A[high].z > pivot) --high;
+		while (A[low].z < pivot) ++low;
+		if (high > low) {
+			if (A[high].z == A[low].z) {
+				high--;
+				low++;
+			}
+			else {
+				struct edge tmp = A[low];
+				A[low] = A[high];
+				A[high] = tmp;
+			}
+		}
+	}
+	if (high > 0)
+		quicksort(A, high);
+	if (numbersCount > low + 1)
+		quicksort(A + low, numbersCount - low);
+}
